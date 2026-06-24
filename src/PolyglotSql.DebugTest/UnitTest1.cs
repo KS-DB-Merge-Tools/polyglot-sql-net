@@ -43,7 +43,7 @@ public class TokenizerTests
         Console.WriteLine("Testing native library load...");
         try
         {
-            string json = PolyglotNative.Tokenize("SELECT 1");
+            string json = Polyglot.Tokenize("SELECT 1");
             Console.WriteLine($"SUCCESS: Got JSON response: {json.Substring(0, Math.Min(100, json.Length))}...");
             Assert.False(string.IsNullOrEmpty(json), "JSON should not be empty");
         }
@@ -259,7 +259,7 @@ public class TokenizerTests
     [Fact]
     public void TestRawJsonOutput()
     {
-        string json = PolyglotNative.Tokenize("SELECT 1");
+        string json = Polyglot.Tokenize("SELECT 1");
         Console.WriteLine($"Raw JSON: {json}");
         Assert.False(string.IsNullOrEmpty(json), "JSON output should not be empty");
     }
@@ -267,7 +267,7 @@ public class TokenizerTests
     [Fact]
     public void TestRawJsonError()
     {
-        string json = PolyglotNative.Tokenize("SELECT <<--\n1");
+            string json = Polyglot.Tokenize("SELECT <<--\n1");
         Console.WriteLine($"Raw JSON (error): {json}");
         Assert.False(string.IsNullOrEmpty(json), "JSON output should not be empty");
     }
@@ -286,7 +286,7 @@ public class TranspileTests
         Console.WriteLine("=== TestTranspileBasic ===");
         try
         {
-            string result = PolyglotNative.Transpile("SELECT 1", "generic", "generic");
+            string result = Polyglot.Transpile("SELECT 1", Dialect.Generic, Dialect.Generic);
             Console.WriteLine($"Result: {result}");
             Assert.False(string.IsNullOrEmpty(result), "Result should not be empty");
         }
@@ -303,7 +303,7 @@ public class TranspileTests
         Console.WriteLine("=== TestTranspileSelect ===");
         try
         {
-            string result = PolyglotNative.Transpile("SELECT a, b FROM t", "generic", "mysql");
+            string result = Polyglot.Transpile("SELECT a, b FROM t", Dialect.Generic, Dialect.MySQL);
             Console.WriteLine($"Result: {result}");
             Assert.False(string.IsNullOrEmpty(result), "Result should not be empty");
         }
@@ -321,7 +321,7 @@ public class TranspileTests
         try
         {
             string optionsJson = "{\"pretty\": true}";
-            string result = PolyglotNative.TranspileWithOptions("SELECT 1", "generic", "generic", optionsJson);
+            string result = Polyglot.TranspileWithOptions("SELECT 1", Dialect.Generic, Dialect.Generic, optionsJson);
             Console.WriteLine($"Result: {result}");
             Assert.False(string.IsNullOrEmpty(result), "Result should not be empty");
         }
@@ -339,7 +339,7 @@ public class TranspileTests
         try
         {
             string sql = "SELECT * FROM users WHERE id = 1";
-            string result = PolyglotNative.Transpile(sql, "mysql", "postgres");
+            string result = Polyglot.Transpile(sql, Dialect.MySQL, Dialect.PostgreSQL);
             Console.WriteLine($"Result: {result}");
             Assert.False(string.IsNullOrEmpty(result), "Result should not be empty");
         }
@@ -357,7 +357,7 @@ public class TranspileTests
         try
         {
             string sql = "SELECT COUNT(*) FROM users GROUP BY status ORDER BY count DESC LIMIT 10";
-            string result = PolyglotNative.Transpile(sql, "generic", "bigquery");
+            string result = Polyglot.Transpile(sql, Dialect.Generic, Dialect.BigQuery);
             Console.WriteLine($"Result: {result}");
             Assert.False(string.IsNullOrEmpty(result), "Result should not be empty");
         }
@@ -374,7 +374,7 @@ public class TranspileTests
         Console.WriteLine("=== TestTranspileError ===");
         try
         {
-            string result = PolyglotNative.Transpile("SELECT <<--", "generic", "generic");
+            string result = Polyglot.Transpile("SELECT <<--", Dialect.Generic, Dialect.Generic);
             Console.WriteLine($"Result (error case): {result}");
         }
         catch (Exception ex)
@@ -397,7 +397,7 @@ public class AstTests
         Console.WriteLine("=== TestParseBasic ===");
         try
         {
-            string json = PolyglotNative.Parse("SELECT 1");
+            string json = Polyglot.Parse("SELECT 1");
             Console.WriteLine($"AST JSON length: {json.Length}");
             Console.WriteLine($"AST JSON preview: {json.Substring(0, Math.Min(200, json.Length))}...");
 
@@ -425,7 +425,7 @@ public class AstTests
         try
         {
             string sql = "SELECT a, b, c FROM users WHERE id = 1";
-            string json = PolyglotNative.Parse(sql);
+            string json = Polyglot.Parse(sql);
             Console.WriteLine($"SQL: {sql}");
             Console.WriteLine($"AST JSON length: {json.Length}");
 
@@ -451,7 +451,7 @@ public class AstTests
         Console.WriteLine("=== TestParseOne ===");
         try
         {
-            string json = PolyglotNative.ParseOne("SELECT 1");
+            string json = Polyglot.ParseOne("SELECT 1");
             Console.WriteLine($"ParseOne JSON: {json.Substring(0, Math.Min(200, json.Length))}...");
             Assert.False(string.IsNullOrEmpty(json), "JSON should not be empty");
         }
@@ -469,7 +469,7 @@ public class AstTests
         try
         {
             string sql = "SELECT COUNT(*) FROM users GROUP BY status ORDER BY count DESC LIMIT 10";
-            string json = PolyglotNative.Parse(sql);
+            string json = Polyglot.Parse(sql);
             Console.WriteLine($"SQL: {sql}");
             Console.WriteLine($"AST JSON length: {json.Length}");
 
@@ -496,7 +496,7 @@ public class AstTests
         try
         {
             string sql = "SELECT 1; SELECT 2";
-            string json = PolyglotNative.Parse(sql);
+            string json = Polyglot.Parse(sql);
             Console.WriteLine($"SQL: {sql}");
             Console.WriteLine($"AST JSON length: {json.Length}");
 
@@ -531,7 +531,7 @@ public class DiffTests
         try
         {
             string sql = "SELECT 1";
-            string json = PolyglotNative.Diff(sql, sql);
+            string json = Polyglot.Diff(sql, sql);
             Console.WriteLine($"Diff JSON: {json}");
 
             var result = DiffParser.Parse(json);
@@ -554,7 +554,7 @@ public class DiffTests
         {
             string sql1 = "SELECT a FROM t";
             string sql2 = "SELECT b FROM t";
-            string json = PolyglotNative.Diff(sql1, sql2);
+            string json = Polyglot.Diff(sql1, sql2);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
             Console.WriteLine($"Diff JSON: {json}");
@@ -583,7 +583,7 @@ public class DiffTests
         {
             string sql1 = "SELECT * FROM users";
             string sql2 = "SELECT * FROM users WHERE id = 1";
-            string json = PolyglotNative.Diff(sql1, sql2);
+            string json = Polyglot.Diff(sql1, sql2);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
             Console.WriteLine($"Diff JSON: {json}");
@@ -612,7 +612,7 @@ public class DiffTests
         {
             string sql1 = "SELECT a, b FROM t WHERE c = 1";
             string sql2 = "SELECT a, b, c FROM t WHERE c = 1 AND d = 2";
-            string json = PolyglotNative.Diff(sql1, sql2);
+            string json = Polyglot.Diff(sql1, sql2);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
             Console.WriteLine($"Diff JSON: {json}");
@@ -641,7 +641,7 @@ public class DiffTests
         {
             string sql1 = "SELECT * FROM users LIMIT 10";
             string sql2 = "SELECT * FROM users LIMIT 20";
-            string json = PolyglotNative.Diff(sql1, sql2, "mysql");
+            string json = Polyglot.Diff(sql1, sql2, Dialect.MySQL);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
             Console.WriteLine($"Dialect: mysql");

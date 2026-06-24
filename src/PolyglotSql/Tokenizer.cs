@@ -463,9 +463,9 @@ namespace PolyglotSql
 
     public class Tokenizer
     {
-        public List<Token> Tokenize(string sql, string dialect = "generic")
+        public List<Token> Tokenize(string sql, Dialect dialect = Dialect.Generic)
         {
-            string json = PolyglotNative.Tokenize(sql, dialect);
+            string json = Polyglot.Tokenize(sql, dialect);
             return ParseTokens(json);
         }
 
