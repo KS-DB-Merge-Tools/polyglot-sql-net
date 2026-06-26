@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-    <LangVersion>10.0</LangVersion>
+    <!-- For VS <= 2019 -->
+    <TargetFrameworks Condition="'$(MSBuildVersion)' &lt; '17.0'">netstandard2.0</TargetFrameworks>
+    <!-- For VS >= 2022 -->
+    <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">netstandard2.0;net8.0</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
     <RootNamespace>PolyglotSql</RootNamespace>
     <AssemblyName>PolyglotSql</AssemblyName>
   </PropertyGroup>
