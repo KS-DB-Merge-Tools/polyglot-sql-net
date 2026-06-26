@@ -23,14 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PolyglotSql\PolyglotSql.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\PolyglotSql\runtimes\**\*">
-      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\PolyglotSql.Bundle\PolyglotSql.Bundle.csproj" />
   </ItemGroup>
 
 </Project>

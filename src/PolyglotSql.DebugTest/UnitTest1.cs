@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using PolyglotSql;
+using PolyglotSql.Bundle;
 
 namespace SqlGlotDotNet.DebugTest;
 
@@ -9,32 +10,7 @@ public class TokenizerTests
 {
     static TokenizerTests()
     {
-        NativeResolver.Register();
-        PrintNativeLibraryInfo();
-    }
-
-    private static void PrintNativeLibraryInfo()
-    {
-        Console.WriteLine("=== Native Library Debug Info ===");
-        Console.WriteLine($"OS: {RuntimeInformation.OSDescription}");
-        Console.WriteLine($"Architecture: {RuntimeInformation.ProcessArchitecture}");
-        Console.WriteLine($"BaseDirectory: {AppContext.BaseDirectory}");
-        Console.WriteLine($"CurrentDirectory: {Environment.CurrentDirectory}");
-
-        string[] paths = {
-            Path.Combine(AppContext.BaseDirectory, "runtimes/linux-x64/native/libpolyglot_sql_ffi.so"),
-            Path.Combine(AppContext.BaseDirectory, "runtimes/win-x64/native/polyglot_sql_ffi.dll"),
-            Path.Combine(AppContext.BaseDirectory, "libpolyglot_sql_ffi.so"),
-            Path.Combine(AppContext.BaseDirectory, "polyglot_sql_ffi.dll"),
-            Path.Combine(Environment.CurrentDirectory, "runtimes/linux-x64/native/libpolyglot_sql_ffi.so"),
-            Path.Combine(Environment.CurrentDirectory, "runtimes/win-x64/native/polyglot_sql_ffi.dll"),
-        };
-
-        foreach (var path in paths)
-        {
-            Console.WriteLine($"  Check: {path} -> Exists: {File.Exists(path)}");
-        }
-        Console.WriteLine("==================================");
+        BundleInitializer.Initialize();
     }
 
     [Fact]
@@ -277,7 +253,7 @@ public class TranspileTests
 {
     static TranspileTests()
     {
-        NativeResolver.Register();
+        BundleInitializer.Initialize();
     }
 
     [Fact]
@@ -388,7 +364,7 @@ public class AstTests
 {
     static AstTests()
     {
-        NativeResolver.Register();
+        BundleInitializer.Initialize();
     }
 
     [Fact]
@@ -521,7 +497,7 @@ public class DiffTests
 {
     static DiffTests()
     {
-        NativeResolver.Register();
+        BundleInitializer.Initialize();
     }
 
     [Fact]

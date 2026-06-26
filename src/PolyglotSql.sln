@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.34301.259
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql", "PolyglotSql\PolyglotSql.csproj", "{A68849B0-E904-4E9B-900E-30280935D05F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql.Core", "PolyglotSql.Core\PolyglotSql.Core.csproj", "{A68849B0-E904-4E9B-900E-30280935D05F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql.Bundle", "PolyglotSql.Bundle\PolyglotSql.Bundle.csproj", "{D68849B0-E904-4E9B-900E-30280935D062}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql.DebugTest", "PolyglotSql.DebugTest\PolyglotSql.DebugTest.csproj", "{948FA328-4740-4C7D-A789-A28FBB5E4CE4}"
 EndProject
@@ -17,6 +19,10 @@ Global
 		{A68849B0-E904-4E9B-900E-30280935D05F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A68849B0-E904-4E9B-900E-30280935D05F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A68849B0-E904-4E9B-900E-30280935D05F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D68849B0-E904-4E9B-900E-30280935D062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D68849B0-E904-4E9B-900E-30280935D062}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D68849B0-E904-4E9B-900E-30280935D062}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D68849B0-E904-4E9B-900E-30280935D062}.Release|Any CPU.Build.0 = Release|Any CPU
 		{948FA328-4740-4C7D-A789-A28FBB5E4CE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{948FA328-4740-4C7D-A789-A28FBB5E4CE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{948FA328-4740-4C7D-A789-A28FBB5E4CE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -26,6 +32,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {8B08B977-590A-4DFB-84D7-A096DB4D27FA}
+		SolutionGuid = {2CC29832-8AFA-4495-BA90-B7B3D6BD37B6}
 	EndGlobalSection
 EndGlobal
