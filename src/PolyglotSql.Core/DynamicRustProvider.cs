@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace PolyglotSql
 {
@@ -157,82 +158,6 @@ namespace PolyglotSql
             }
         }
 
-        private int FindMatchingBracket(string s, int start)
-        {
-            int depth = 0;
-            bool inString = false;
-            for (int i = start; i < s.Length; i++)
-            {
-                char c = s[i];
-                if (c == '"' && (i == 0 || s[i - 1] != '\\'))
-                    inString = !inString;
-                else if (!inString)
-                {
-                    if (c == '[') depth++;
-                    else if (c == ']') depth--;
-                }
-                if (depth == 0) return i;
-            }
-            return -1;
-        }
-
-        private string ParseJsonString(string json, ref int i)
-        {
-            i = json.IndexOf('"', i);
-            if (i == -1) return string.Empty;
-            i++;
-            int start = i;
-            var sb = new System.Text.StringBuilder();
-            while (i < json.Length)
-            {
-                char c = json[i];
-                if (c == '\\' && i + 1 < json.Length)
-                {
-                    sb.Append(json[i + 1]);
-                    i += 2;
-                }
-                else if (c == '"')
-                {
-                    i++;
-                    return sb.ToString();
-                }
-                else
-                {
-                    sb.Append(c);
-                    i++;
-                }
-            }
-            return sb.ToString();
-        }
-
-        private string[] ParseStringArray(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-                return System.Array.Empty<string>();
-
-            int i = 0;
-            i = json.IndexOf('[', i);
-            if (i == -1) return System.Array.Empty<string>();
-            int arrEnd = FindMatchingBracket(json, i);
-            if (arrEnd == -1) return System.Array.Empty<string>();
-
-            var list = new System.Collections.Generic.List<string>();
-            i++;
-            while (i < arrEnd)
-            {
-                if (json[i] == '"')
-                {
-                    string s = ParseJsonString(json, ref i);
-                    list.Add(s);
-                }
-                else
-                {
-                    i++;
-                }
-            }
-            return list.ToArray();
-        }
-
         private string[] CallNativeArray(PolyglotTranspileDelegate del, string sql, string fromDialect, string toDialect)
         {
             IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
@@ -312,7 +237,7 @@ namespace PolyglotSql
                 : "[]";
 
             _freeResult(result);
-            return ParseStringArray(json);
+            return JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.StringArray);
         }
 
         public void Dispose()
