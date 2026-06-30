@@ -282,7 +282,7 @@ namespace PolyglotSql
                 if (result.Error != IntPtr.Zero)
                     _freeString(result.Error);
 
-                throw new InvalidOperationException($"Polyglot error (status {result.Status}): {error}");
+                throw new PolyglotException(result.Status, $"Polyglot error (status {result.Status}): {error}");
             }
 
             string json = result.Data != IntPtr.Zero
@@ -304,7 +304,7 @@ namespace PolyglotSql
                 if (result.Error != IntPtr.Zero)
                     _freeString(result.Error);
 
-                throw new InvalidOperationException($"Polyglot error (status {result.Status}): {error}");
+                throw new PolyglotException(result.Status, $"Polyglot error (status {result.Status}): {error}");
             }
 
             string json = result.Data != IntPtr.Zero
