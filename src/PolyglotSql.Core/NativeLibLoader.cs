@@ -31,6 +31,8 @@ namespace PolyglotSql
 
         public static IntPtr Load(string libraryPath)
         {
+            Console.WriteLine("[DEBUG] libraryPath: " + libraryPath);
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 IntPtr handle = LoadLibrary(libraryPath);

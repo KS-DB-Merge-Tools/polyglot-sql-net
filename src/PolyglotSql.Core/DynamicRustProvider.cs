@@ -76,11 +76,11 @@ namespace PolyglotSql
         public string Tokenize(string sql, Dialect dialect = Dialect.Generic)
             => CallNative(_tokenize, sql, dialect.ToString().ToLowerInvariant());
 
-        public string Transpile(string sql, Dialect fromDialect, Dialect toDialect)
-            => CallNative(_transpile, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant());
+        public string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect)
+            => CallNativeArray(_transpile, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant());
 
-        public string TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson)
-            => CallNative(_transpileWithOptions, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant(), optionsJson);
+        public string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson)
+            => CallNativeArray(_transpileWithOptions, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant(), optionsJson);
 
         public string Parse(string sql, Dialect dialect = Dialect.Generic)
             => CallNative(_parse, sql, dialect.ToString().ToLowerInvariant());
@@ -104,44 +104,6 @@ namespace PolyglotSql
             {
                 Marshal.FreeHGlobal(sqlPtr);
                 Marshal.FreeHGlobal(dialectPtr);
-            }
-        }
-
-        private string CallNative(PolyglotTranspileDelegate del, string sql, string fromDialect, string toDialect)
-        {
-            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
-            IntPtr fromPtr = Marshal.StringToHGlobalAnsi(fromDialect);
-            IntPtr toPtr = Marshal.StringToHGlobalAnsi(toDialect);
-            try
-            {
-                var result = del(sqlPtr, fromPtr, toPtr);
-                return HandleResult(result);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(sqlPtr);
-                Marshal.FreeHGlobal(fromPtr);
-                Marshal.FreeHGlobal(toPtr);
-            }
-        }
-
-        private string CallNative(PolyglotTranspileWithOptionsDelegate del, string sql, string fromDialect, string toDialect, string options)
-        {
-            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
-            IntPtr fromPtr = Marshal.StringToHGlobalAnsi(fromDialect);
-            IntPtr toPtr = Marshal.StringToHGlobalAnsi(toDialect);
-            IntPtr optPtr = Marshal.StringToHGlobalAnsi(options);
-            try
-            {
-                var result = del(sqlPtr, fromPtr, toPtr, optPtr);
-                return HandleResult(result);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(sqlPtr);
-                Marshal.FreeHGlobal(fromPtr);
-                Marshal.FreeHGlobal(toPtr);
-                Marshal.FreeHGlobal(optPtr);
             }
         }
 
@@ -195,6 +157,120 @@ namespace PolyglotSql
             }
         }
 
+        private int FindMatchingBracket(string s, int start)
+        {
+            int depth = 0;
+            bool inString = false;
+            for (int i = start; i < s.Length; i++)
+            {
+                char c = s[i];
+                if (c == '"' && (i == 0 || s[i - 1] != '\\'))
+                    inString = !inString;
+                else if (!inString)
+                {
+                    if (c == '[') depth++;
+                    else if (c == ']') depth--;
+                }
+                if (depth == 0) return i;
+            }
+            return -1;
+        }
+
+        private string ParseJsonString(string json, ref int i)
+        {
+            i = json.IndexOf('"', i);
+            if (i == -1) return string.Empty;
+            i++;
+            int start = i;
+            var sb = new System.Text.StringBuilder();
+            while (i < json.Length)
+            {
+                char c = json[i];
+                if (c == '\\' && i + 1 < json.Length)
+                {
+                    sb.Append(json[i + 1]);
+                    i += 2;
+                }
+                else if (c == '"')
+                {
+                    i++;
+                    return sb.ToString();
+                }
+                else
+                {
+                    sb.Append(c);
+                    i++;
+                }
+            }
+            return sb.ToString();
+        }
+
+        private string[] ParseStringArray(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+                return System.Array.Empty<string>();
+
+            int i = 0;
+            i = json.IndexOf('[', i);
+            if (i == -1) return System.Array.Empty<string>();
+            int arrEnd = FindMatchingBracket(json, i);
+            if (arrEnd == -1) return System.Array.Empty<string>();
+
+            var list = new System.Collections.Generic.List<string>();
+            i++;
+            while (i < arrEnd)
+            {
+                if (json[i] == '"')
+                {
+                    string s = ParseJsonString(json, ref i);
+                    list.Add(s);
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            return list.ToArray();
+        }
+
+        private string[] CallNativeArray(PolyglotTranspileDelegate del, string sql, string fromDialect, string toDialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr fromPtr = Marshal.StringToHGlobalAnsi(fromDialect);
+            IntPtr toPtr = Marshal.StringToHGlobalAnsi(toDialect);
+            try
+            {
+                var result = del(sqlPtr, fromPtr, toPtr);
+                return HandleResultArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(fromPtr);
+                Marshal.FreeHGlobal(toPtr);
+            }
+        }
+
+        private string[] CallNativeArray(PolyglotTranspileWithOptionsDelegate del, string sql, string fromDialect, string toDialect, string options)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr fromPtr = Marshal.StringToHGlobalAnsi(fromDialect);
+            IntPtr toPtr = Marshal.StringToHGlobalAnsi(toDialect);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(options);
+            try
+            {
+                var result = del(sqlPtr, fromPtr, toPtr, optPtr);
+                return HandleResultArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(fromPtr);
+                Marshal.FreeHGlobal(toPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
         private string HandleResult(PolyglotResult result)
         {
             if (result.Status != 0)
@@ -215,6 +291,28 @@ namespace PolyglotSql
 
             _freeResult(result);
             return json;
+        }
+
+        private string[] HandleResultArray(PolyglotResult result)
+        {
+            if (result.Status != 0)
+            {
+                string error = result.Error != IntPtr.Zero
+                    ? Marshal.PtrToStringAnsi(result.Error) ?? "Unknown error"
+                    : "Unknown error";
+
+                if (result.Error != IntPtr.Zero)
+                    _freeString(result.Error);
+
+                throw new InvalidOperationException($"Polyglot error (status {result.Status}): {error}");
+            }
+
+            string json = result.Data != IntPtr.Zero
+                ? Marshal.PtrToStringAnsi(result.Data) ?? "[]"
+                : "[]";
+
+            _freeResult(result);
+            return ParseStringArray(json);
         }
 
         public void Dispose()

@@ -1,5 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
+
+  <!-- net framework - keep runtimes folder -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
     <None Include="$(MSBuildThisFileDirectory)runtimes\win-x64\native\polyglot_sql_ffi.dll">
       <Link>runtimes\win-x64\native\polyglot_sql_ffi.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -8,5 +10,22 @@
       <Link>runtimes\linux-x64\native\libpolyglot_sql_ffi.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <!-- to the root otherwise -->
+  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4'))">
+    <Content Include="$(MSBuildThisFileDirectory)runtimes\win-x64\native\polyglot_sql_ffi.dll">
+      <PackagePath>runtimes/win-x64/native/polyglot_sql_ffi.dll</PackagePath>
+      <Link>polyglot_sql_ffi.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    
+    <Content Include="$(MSBuildThisFileDirectory)runtimes\linux-x64\native\libpolyglot_sql_ffi.so">
+      <PackagePath>runtimes/linux-x64/native/libpolyglot_sql_ffi.so</PackagePath>
+      <Link>libpolyglot_sql_ffi.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
   </ItemGroup>
 </Project>

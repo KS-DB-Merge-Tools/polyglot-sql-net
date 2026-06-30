@@ -13,12 +13,6 @@ namespace PolyglotSql.Bundle
     {
         public static string GetCurrentDllPath()
         {
-#if NET8_0_OR_GREATER
-            if (RuntimeFeature.IsDynamicCodeSupported)
-            {
-                return typeof(LibPathResolver).Assembly.Location;
-            }
-#else
             try
             {
                 string location = typeof(LibPathResolver).Assembly.Location;
@@ -28,7 +22,6 @@ namespace PolyglotSql.Bundle
             catch
             {
             }
-#endif
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

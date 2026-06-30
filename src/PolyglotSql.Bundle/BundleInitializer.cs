@@ -18,10 +18,15 @@ namespace PolyglotSql.Bundle
         private static string GetLibPath()
         {
             string libFileName = GetLibFileName();
-            string rid = GetRid();
+            string libFolder = Path.GetDirectoryName(LibPathResolver.GetCurrentDllPath());
+
+#if NET8_0_OR_GREATER
+            return Path.Combine(libFolder, libFileName);
+#else
+            string rid = GetWindowsRid();
             string runtimeFolder = $"runtimes/{rid}/native";
 
-            string currentDllDir = Path.GetDirectoryName(LibPathResolver.GetCurrentDllPath()) ?? AppContext.BaseDirectory;
+            string currentDllDir = AppContext.BaseDirectory;
             string[] candidates =
             {
                 Path.Combine(currentDllDir, runtimeFolder, libFileName),
@@ -36,28 +41,23 @@ namespace PolyglotSql.Bundle
             }
 
             return libFileName;
+#endif
         }
 
 
-        private static string GetRid()
+        private static string GetWindowsRid()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return "win-x64";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                string? ostype = Environment.GetEnvironmentVariable("OSTYPE");
-                if (ostype == "linux-musl")
-                    return "linux-musl-x64";
-                return "linux-x64";
-            }
-            return "linux-x64";
+            if (RuntimeInformation.ProcessArchitecture == Architecture.X86)
+                return "win-x86";
+
+            return "win-x64";
         }
 
         private static string GetLibFileName()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return "polyglot_sql_ffi.dll";
-            return "libpolyglot_sql_ffi.so";
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? "polyglot_sql_ffi.dll"
+                : "libpolyglot_sql_ffi.so";
         }
     }
 }
