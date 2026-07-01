@@ -40,6 +40,12 @@ namespace PolyglotSql
         private delegate PolyglotResult PolyglotDiffDelegate(IntPtr sql1, IntPtr sql2, IntPtr dialect);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotParseDataTypeDelegate(IntPtr sql, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotGenerateDataTypeDelegate(IntPtr dataTypeJson, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void PolyglotFreeStringDelegate(IntPtr s);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -51,6 +57,8 @@ namespace PolyglotSql
         private PolyglotParseDelegate _parse;
         private PolyglotParseOneDelegate _parseOne;
         private PolyglotDiffDelegate _diff;
+        private PolyglotParseDataTypeDelegate _parseDataType;
+        private PolyglotGenerateDataTypeDelegate _generateDataType;
         private PolyglotFreeStringDelegate _freeString;
         private PolyglotFreeResultDelegate _freeResult;
 
@@ -64,6 +72,8 @@ namespace PolyglotSql
             _parse = LoadDelegate<PolyglotParseDelegate>("polyglot_parse");
             _parseOne = LoadDelegate<PolyglotParseOneDelegate>("polyglot_parse_one");
             _diff = LoadDelegate<PolyglotDiffDelegate>("polyglot_diff");
+            _parseDataType = LoadDelegate<PolyglotParseDataTypeDelegate>("polyglot_parse_data_type");
+            _generateDataType = LoadDelegate<PolyglotGenerateDataTypeDelegate>("polyglot_generate_data_type");
             _freeString = LoadDelegate<PolyglotFreeStringDelegate>("polyglot_free_string");
             _freeResult = LoadDelegate<PolyglotFreeResultDelegate>("polyglot_free_result");
         }
@@ -90,7 +100,19 @@ namespace PolyglotSql
             => CallNative(_parseOne, sql, dialect.ToString().ToLowerInvariant());
 
         public string Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic)
-            => CallNative(_diff, sql1, sql2, dialect.ToString().ToLowerInvariant());
+            => CallNativeThreeStrings(_diff, sql1, sql2, dialect.ToString().ToLowerInvariant());
+
+        public DataType ParseDataType(string sql, Dialect dialect = Dialect.Generic)
+        {
+            string json = CallNative(_parseDataType, sql, dialect.ToString().ToLowerInvariant());
+            return JsonSerializer.Deserialize<DataType>(json)!;
+        }
+
+        public string GenerateDataType(DataType dataType, Dialect dialect = Dialect.Generic)
+        {
+            string json = JsonSerializer.Serialize(dataType);
+            return CallNative(_generateDataType, json, dialect.ToString().ToLowerInvariant());
+        }
 
         private string CallNative(PolyglotTokenizeDelegate del, string sql, string dialect)
         {
@@ -140,7 +162,39 @@ namespace PolyglotSql
             }
         }
 
-        private string CallNative(PolyglotDiffDelegate del, string sql1, string sql2, string dialect)
+        private string CallNative(PolyglotParseDataTypeDelegate del, string sql, string dialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(sqlPtr, dialectPtr);
+                return HandleResult(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private string CallNative(PolyglotGenerateDataTypeDelegate del, string dataTypeJson, string dialect)
+        {
+            IntPtr jsonPtr = Marshal.StringToHGlobalAnsi(dataTypeJson);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(jsonPtr, dialectPtr);
+                return HandleResult(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(jsonPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private string CallNativeThreeStrings(PolyglotDiffDelegate del, string sql1, string sql2, string dialect)
         {
             IntPtr sql1Ptr = Marshal.StringToHGlobalAnsi(sql1);
             IntPtr sql2Ptr = Marshal.StringToHGlobalAnsi(sql2);
@@ -237,7 +291,7 @@ namespace PolyglotSql
                 : "[]";
 
             _freeResult(result);
-            return JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.StringArray);
+            return JsonSerializer.Deserialize<string[]>(json)!;
         }
 
         public void Dispose()

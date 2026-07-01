@@ -4,7 +4,11 @@ using System.Text.Json.Serialization;
 namespace PolyglotSql
 {
     [JsonSerializable(typeof(string[]))]
-    internal partial class PolyglotJsonContext : JsonSerializerContext
+    [JsonSerializable(typeof(DataType), TypeInfoPropertyName = "DataType")]
+    [JsonSerializable(typeof(StructField))]
+    [JsonSerializable(typeof(UnionField))]
+    [JsonSerializable(typeof(ObjectField))]
+    public partial class PolyglotJsonContext : JsonSerializerContext
     {
     }
 }
