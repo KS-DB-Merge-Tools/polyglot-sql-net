@@ -135,42 +135,50 @@ public class DataTypeTests
         }
     }
 
-[Fact]
-        public void TestParseDataTypeStruct()
+    [Fact]
+    public void TestParseDataTypeStruct()
+    {
+        Console.WriteLine("=== TestParseDataTypeStruct ===");
+        try
         {
-            Console.WriteLine("=== TestParseDataTypeStruct ===");
-            try
-            {
-                DataType result = Polyglot.ParseDataType("STRUCT<a INT, b VARCHAR(100)>", Dialect.DuckDB);
-                string json = JsonSerializer.Serialize(result);
-                Console.WriteLine($"Result: {json}");
-                var structType = Assert.IsType<DataType.StructType>(result);
-                Assert.NotNull(structType.Fields);
-                Assert.Equal(2, structType.Fields.Count);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
-                throw;
-            }
+            DataType result = Polyglot.ParseDataType("STRUCT<a INT, b VARCHAR(100)>", Dialect.DuckDB);
+            string json = JsonSerializer.Serialize(result);
+            Console.WriteLine($"Result: {json}");
+            var structType = Assert.IsType<DataType.StructType>(result);
+            Assert.NotNull(structType.Fields);
+            Assert.Equal(2, structType.Fields.Count);
         }
-
-        [Fact]
-        public void TestParseDataTypeUnion()
+        catch (Exception ex)
         {
-            Console.WriteLine("=== TestParseDataTypeUnion ===");
-            try
-            {
-                DataType result = Polyglot.ParseDataType("UNION(num INT, str TEXT)", Dialect.DuckDB);
-                string json = JsonSerializer.Serialize(result);
-                Console.WriteLine($"Result: {json}");
-                var unionType = Assert.IsType<DataType.UnionType>(result);
-                Assert.NotNull(unionType.Fields);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
-                throw;
-            }
+            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
+            throw;
         }
     }
+
+    [Fact]
+    public void TestParseDataTypeUnion()
+    {
+        Console.WriteLine("=== TestParseDataTypeUnion ===");
+        try
+        {
+            DataType result = Polyglot.ParseDataType("UNION(num INT, str TEXT)", Dialect.DuckDB);
+            string json = JsonSerializer.Serialize(result);
+            Console.WriteLine($"Result: {json}");
+            var unionType = Assert.IsType<DataType.UnionType>(result);
+            Assert.NotNull(unionType.Fields);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
+            throw;
+        }
+    }
+
+    [Theory]
+    [InlineData("tinyint", Dialect.TSQL)]
+    public void ParseAndGenBackToItself(string type, Dialect dialect)
+    {
+        string actual = Polyglot.TranspileDataType(type, dialect, dialect);
+        Assert.Equal(type.ToUpperInvariant(), actual.ToUpperInvariant());
+    }
+}

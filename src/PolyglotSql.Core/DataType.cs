@@ -7,11 +7,11 @@ namespace PolyglotSql
 {
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "data_type")]
     [JsonDerivedType(typeof(Boolean), "boolean")]
-    [JsonDerivedType(typeof(TinyInt), "tinyint")]
-    [JsonDerivedType(typeof(SmallInt), "smallint")]
+    [JsonDerivedType(typeof(TinyInt), "tiny_int")]
+    [JsonDerivedType(typeof(SmallInt), "small_int")]
     [JsonDerivedType(typeof(Int), "int")]
-    [JsonDerivedType(typeof(UInt), "uint")]
-    [JsonDerivedType(typeof(BigInt), "bigint")]
+    [JsonDerivedType(typeof(UInt), "u_int")]
+    [JsonDerivedType(typeof(BigInt), "big_int")]
     [JsonDerivedType(typeof(Float), "float")]
     [JsonDerivedType(typeof(Double), "double")]
     [JsonDerivedType(typeof(Decimal), "decimal")]
@@ -21,16 +21,16 @@ namespace PolyglotSql
     [JsonDerivedType(typeof(Text), "text")]
     [JsonDerivedType(typeof(TextWithLength), "text_with_length")]
     [JsonDerivedType(typeof(Binary), "binary")]
-    [JsonDerivedType(typeof(VarBinary), "varbinary")]
+    [JsonDerivedType(typeof(VarBinary), "var_binary")]
     [JsonDerivedType(typeof(Blob), "blob")]
     [JsonDerivedType(typeof(Bit), "bit")]
-    [JsonDerivedType(typeof(VarBit), "varbit")]
+    [JsonDerivedType(typeof(VarBit), "var_bit")]
     [JsonDerivedType(typeof(Date), "date")]
     [JsonDerivedType(typeof(Time), "time")]
     [JsonDerivedType(typeof(Timestamp), "timestamp")]
     [JsonDerivedType(typeof(IntervalType), "interval")]
     [JsonDerivedType(typeof(Json), "json")]
-    [JsonDerivedType(typeof(JsonB), "jsonb")]
+    [JsonDerivedType(typeof(JsonB), "json_b")]
     [JsonDerivedType(typeof(Uuid), "uuid")]
     [JsonDerivedType(typeof(ArrayType), "array")]
     [JsonDerivedType(typeof(ListType), "list")]
@@ -412,7 +412,7 @@ namespace PolyglotSql
                 }
                 else if (reader.TokenType == JsonTokenType.StartObject)
                 {
-                    dataType = (DataType)JsonSerializer.Deserialize(ref reader, typeof(DataType), options) !;
+                    dataType = (DataType)JsonSerializer.Deserialize(ref reader, typeof(DataType), options)!;
                 }
                 index++;
             }
@@ -477,7 +477,7 @@ namespace PolyglotSql
                 }
                 else if (reader.TokenType == JsonTokenType.StartObject)
                 {
-                    dataType = (DataType)JsonSerializer.Deserialize(ref reader, typeof(DataType), options) !;
+                    dataType = (DataType)JsonSerializer.Deserialize(ref reader, typeof(DataType), options)!;
                 }
                 index++;
             }

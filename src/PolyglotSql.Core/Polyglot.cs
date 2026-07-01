@@ -69,5 +69,15 @@ namespace PolyglotSql
 
         public static string GenerateDataType(DataType dataType, Dialect dialect = Dialect.Generic)
             => Provider.GenerateDataType(dataType, dialect);
+
+        public static string TranspileDataType(string sql, Dialect fromDialect, Dialect toDialect)
+        {
+            DataType fromType = ParseDataType(sql, fromDialect);
+            if (fromType != null)
+                return GenerateDataType(fromType, toDialect);
+
+            // like in regular Transpile - if no transpile result then return input
+            return sql;
+        }
     }
 }
