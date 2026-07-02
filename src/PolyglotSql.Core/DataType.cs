@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace PolyglotSql
 {
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "data_type")]
-    [JsonDerivedType(typeof(Boolean), "boolean")]
+    [JsonDerivedType(typeof(DataTypeBool), "boolean")]
     [JsonDerivedType(typeof(TinyInt), "tiny_int")]
     [JsonDerivedType(typeof(SmallInt), "small_int")]
     [JsonDerivedType(typeof(Int), "int")]
@@ -52,7 +52,9 @@ namespace PolyglotSql
         private DataType() { }
 
         // Numeric types
-        public sealed record Boolean : DataType;
+
+        // Not Boolean to avoid conflicts with System.Boolean
+        public sealed record DataTypeBool : DataType;
 
         public sealed record TinyInt : DataType
         {

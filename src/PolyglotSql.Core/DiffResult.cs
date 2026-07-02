@@ -7,6 +7,7 @@ namespace PolyglotSql
 {
     public enum DiffEditType
     {
+        Unknown,
         Insert,
         Remove,
         Move,
@@ -17,85 +18,30 @@ namespace PolyglotSql
     public class DiffEdit
     {
         [JsonPropertyName("type")]
-        public string Type { get; set; } = "";
+        public DiffEditType Type { get; set; } = DiffEditType.Unknown;
 
         [JsonPropertyName("expression")]
-        public JsonElement? Expression { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Expression Expression { get; set; }
 
         [JsonPropertyName("source")]
-        public JsonElement? Source { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Expression Source { get; set; }
 
         [JsonPropertyName("target")]
-        public JsonElement? Target { get; set; }
-
-        public DiffEditType EditType
-        {
-            get
-            {
-                return Type switch
-                {
-                    "insert" => DiffEditType.Insert,
-                    "remove" => DiffEditType.Remove,
-                    "move" => DiffEditType.Move,
-                    "update" => DiffEditType.Update,
-                    "keep" => DiffEditType.Keep,
-                    _ => DiffEditType.Keep
-                };
-            }
-        }
-
-        public override string ToString()
-        {
-            return Type switch
-            {
-                "insert" => $"Insert: {GetExpressionPreview()}",
-                "remove" => $"Remove: {GetExpressionPreview()}",
-                "move" => $"Move: {GetSourcePreview()} -> {GetTargetPreview()}",
-                "update" => $"Update: {GetSourcePreview()} -> {GetTargetPreview()}",
-                "keep" => $"Keep: {GetSourcePreview()} == {GetTargetPreview()}",
-                _ => $"Unknown: {Type}"
-            };
-        }
-
-        private string GetExpressionPreview()
-        {
-            if (Expression.HasValue)
-                return GetJsonPreview(Expression.Value);
-            return "(no expression)";
-        }
-
-        private string GetSourcePreview()
-        {
-            if (Source.HasValue)
-                return GetJsonPreview(Source.Value);
-            return "(no source)";
-        }
-
-        private string GetTargetPreview()
-        {
-            if (Target.HasValue)
-                return GetJsonPreview(Target.Value);
-            return "(no target)";
-        }
-
-        private static string GetJsonPreview(JsonElement element)
-        {
-            string raw = element.GetRawText();
-            if (raw.Length > 60)
-                return raw.Substring(0, 60) + "...";
-            return raw;
-        }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Expression Target { get; set; }
     }
 
     public class DiffResult
     {
         public List<DiffEdit> Edits { get; set; } = new List<DiffEdit>();
 
-        public int InsertCount => Edits.FindAll(e => e.EditType == DiffEditType.Insert).Count;
-        public int RemoveCount => Edits.FindAll(e => e.EditType == DiffEditType.Remove).Count;
-        public int MoveCount => Edits.FindAll(e => e.EditType == DiffEditType.Move).Count;
-        public int UpdateCount => Edits.FindAll(e => e.EditType == DiffEditType.Update).Count;
-        public int KeepCount => Edits.FindAll(e => e.EditType == DiffEditType.Keep).Count;
+        public int InsertCount { get; set; }
+        public int RemoveCount { get; set; }
+        public int MoveCount { get; set; }
+        public int UpdateCount { get; set; }
+        public int KeepCount { get; set; }
 
         public bool AreEqual => InsertCount == 0 && RemoveCount == 0 && MoveCount == 0 && UpdateCount == 0;
 
@@ -110,36 +56,57 @@ namespace PolyglotSql
         public static DiffResult Parse(string json)
         {
             var result = new DiffResult();
-            using var doc = JsonDocument.Parse(json);
+            var doc = JsonDocument.Parse(json);
+            var edits = new List<DiffEdit>();
 
-            if (doc.RootElement.ValueKind == JsonValueKind.Array)
+            foreach (var elem in doc.RootElement.EnumerateArray())
             {
-                foreach (var element in doc.RootElement.EnumerateArray())
+                var typeString = elem.GetProperty("type").GetString() ?? "";
+                var edit = new DiffEdit
                 {
-                    result.Edits.Add(ParseEdit(element));
+                    Type = Enum.TryParse<DiffEditType>(typeString, true, out var parsedType) ? parsedType : DiffEditType.Unknown
+                };
+
+                if (elem.TryGetProperty("expression", out var expr))
+                {
+                    edit.Expression = new Expression(expr);
                 }
+
+                if (elem.TryGetProperty("source", out var src))
+                {
+                    edit.Source = new Expression(src);
+                }
+
+                if (elem.TryGetProperty("target", out var tgt))
+                {
+                    edit.Target = new Expression(tgt);
+                }
+
+                edits.Add(edit);
             }
 
-            return result;
-        }
+            result.Edits = edits;
 
-        private static DiffEdit ParseEdit(JsonElement element)
-        {
-            var edit = new DiffEdit
+            // Count edits by type
+            int insertCount = 0, removeCount = 0, moveCount = 0, updateCount = 0, keepCount = 0;
+            foreach (var edit in result.Edits)
             {
-                Type = element.GetProperty("type").GetString() ?? ""
-            };
+                switch (edit.Type)
+                {
+                    case DiffEditType.Insert: insertCount++; break;
+                    case DiffEditType.Remove: removeCount++; break;
+                    case DiffEditType.Move: moveCount++; break;
+                    case DiffEditType.Update: updateCount++; break;
+                    case DiffEditType.Keep: keepCount++; break;
+                }
+            }
+            result.InsertCount = insertCount;
+            result.RemoveCount = removeCount;
+            result.MoveCount = moveCount;
+            result.UpdateCount = updateCount;
+            result.KeepCount = keepCount;
 
-            if (element.TryGetProperty("expression", out var expr))
-                edit.Expression = expr.Clone();
-
-            if (element.TryGetProperty("source", out var source))
-                edit.Source = source.Clone();
-
-            if (element.TryGetProperty("target", out var target))
-                edit.Target = target.Clone();
-
-            return edit;
+            return result;
         }
     }
 }

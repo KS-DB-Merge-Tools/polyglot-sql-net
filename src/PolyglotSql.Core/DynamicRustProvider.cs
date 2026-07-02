@@ -99,8 +99,12 @@ namespace PolyglotSql
         public string ParseOne(string sql, Dialect dialect = Dialect.Generic)
             => CallNative(_parseOne, sql, dialect.ToString().ToLowerInvariant());
 
-        public string Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic)
-            => CallNativeThreeStrings(_diff, sql1, sql2, dialect.ToString().ToLowerInvariant());
+        public DiffResult Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic)
+        {
+            string json = CallNativeThreeStrings(_diff, sql1, sql2, dialect.ToString().ToLowerInvariant());
+            var result = DiffParser.Parse(json);
+            return result;
+        }
 
         public DataType ParseDataType(string sql, Dialect dialect = Dialect.Generic)
         {

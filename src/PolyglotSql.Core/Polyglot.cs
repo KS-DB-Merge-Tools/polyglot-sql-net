@@ -10,7 +10,7 @@ namespace PolyglotSql
         string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson);
         string Parse(string sql, Dialect dialect = Dialect.Generic);
         string ParseOne(string sql, Dialect dialect = Dialect.Generic);
-        string Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic);
+        DiffResult Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic);
         DataType ParseDataType(string sql, Dialect dialect = Dialect.Generic);
         string GenerateDataType(DataType dataType, Dialect dialect = Dialect.Generic);
     }
@@ -61,7 +61,7 @@ namespace PolyglotSql
         public static string ParseOne(string sql, Dialect dialect = Dialect.Generic)
             => Provider.ParseOne(sql, dialect);
 
-        public static string Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic)
+        public static DiffResult Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic)
             => Provider.Diff(sql1, sql2, dialect);
 
         public static DataType ParseDataType(string sql, Dialect dialect = Dialect.Generic)

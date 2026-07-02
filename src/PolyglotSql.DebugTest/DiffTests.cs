@@ -17,10 +17,7 @@ public class DiffTests
         try
         {
             string sql = "SELECT 1";
-            string json = Polyglot.Diff(sql, sql);
-            Console.WriteLine($"Diff JSON: {json}");
-
-            var result = DiffParser.Parse(json);
+            var result = Polyglot.Diff(sql, sql);
             Console.WriteLine($"Diff result: {result}");
 
             Assert.True(result.AreEqual, "Identical SQL should have no differences");
@@ -40,12 +37,9 @@ public class DiffTests
         {
             string sql1 = "SELECT a FROM t";
             string sql2 = "SELECT b FROM t";
-            string json = Polyglot.Diff(sql1, sql2);
+            var result = Polyglot.Diff(sql1, sql2);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
-            Console.WriteLine($"Diff JSON: {json}");
-
-            var result = DiffParser.Parse(json);
             Console.WriteLine($"Diff result: {result}");
             foreach (var edit in result.Edits)
             {
@@ -69,12 +63,9 @@ public class DiffTests
         {
             string sql1 = "SELECT * FROM users";
             string sql2 = "SELECT * FROM users WHERE id = 1";
-            string json = Polyglot.Diff(sql1, sql2);
+            var result = Polyglot.Diff(sql1, sql2);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
-            Console.WriteLine($"Diff JSON: {json}");
-
-            var result = DiffParser.Parse(json);
             Console.WriteLine($"Diff result: {result}");
             foreach (var edit in result.Edits)
             {
@@ -98,12 +89,9 @@ public class DiffTests
         {
             string sql1 = "SELECT a, b FROM t WHERE c = 1";
             string sql2 = "SELECT a, b, c FROM t WHERE c = 1 AND d = 2";
-            string json = Polyglot.Diff(sql1, sql2);
+            var result = Polyglot.Diff(sql1, sql2);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
-            Console.WriteLine($"Diff JSON: {json}");
-
-            var result = DiffParser.Parse(json);
             Console.WriteLine($"Diff result: {result}");
             foreach (var edit in result.Edits)
             {
@@ -127,13 +115,10 @@ public class DiffTests
         {
             string sql1 = "SELECT * FROM users LIMIT 10";
             string sql2 = "SELECT * FROM users LIMIT 20";
-            string json = Polyglot.Diff(sql1, sql2, Dialect.MySQL);
+            var result = Polyglot.Diff(sql1, sql2, Dialect.MySQL);
             Console.WriteLine($"SQL1: {sql1}");
             Console.WriteLine($"SQL2: {sql2}");
             Console.WriteLine($"Dialect: mysql");
-            Console.WriteLine($"Diff JSON: {json}");
-
-            var result = DiffParser.Parse(json);
             Console.WriteLine($"Diff result: {result}");
             foreach (var edit in result.Edits)
             {

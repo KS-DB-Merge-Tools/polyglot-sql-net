@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -8,6 +10,8 @@ namespace PolyglotSql
     [JsonSerializable(typeof(StructField))]
     [JsonSerializable(typeof(UnionField))]
     [JsonSerializable(typeof(ObjectField))]
+    [JsonSerializable(typeof(DiffResult))]
+    [JsonSerializable(typeof(Expression))]
     public partial class PolyglotJsonContext : JsonSerializerContext
     {
     }
