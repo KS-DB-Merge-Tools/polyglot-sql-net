@@ -93,11 +93,11 @@ namespace PolyglotSql
         public string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson)
             => CallNativeArray(_transpileWithOptions, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant(), optionsJson);
 
-        public string Parse(string sql, Dialect dialect = Dialect.Generic)
-            => CallNative(_parse, sql, dialect.ToString().ToLowerInvariant());
+        public Expression[] Parse(string sql, Dialect dialect = Dialect.Generic)
+            => CallNativeParse(_parse, sql, dialect.ToString().ToLowerInvariant());
 
-        public string ParseOne(string sql, Dialect dialect = Dialect.Generic)
-            => CallNative(_parseOne, sql, dialect.ToString().ToLowerInvariant());
+        public Expression ParseOne(string sql, Dialect dialect = Dialect.Generic)
+            => CallNativeParseOne(_parseOne, sql, dialect.ToString().ToLowerInvariant());
 
         public DiffResult Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic)
         {
@@ -134,14 +134,14 @@ namespace PolyglotSql
             }
         }
 
-        private string CallNative(PolyglotParseDelegate del, string sql, string dialect)
+        private Expression[] CallNativeParse(PolyglotParseDelegate del, string sql, string dialect)
         {
             IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
             IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
             try
             {
                 var result = del(sqlPtr, dialectPtr);
-                return HandleResult(result);
+                return HandleResultParseArray(result);
             }
             finally
             {
@@ -150,14 +150,14 @@ namespace PolyglotSql
             }
         }
 
-        private string CallNative(PolyglotParseOneDelegate del, string sql, string dialect)
+        private Expression CallNativeParseOne(PolyglotParseOneDelegate del, string sql, string dialect)
         {
             IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
             IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
             try
             {
                 var result = del(sqlPtr, dialectPtr);
-                return HandleResult(result);
+                return HandleResultParseOne(result);
             }
             finally
             {
@@ -296,6 +296,60 @@ namespace PolyglotSql
 
             _freeResult(result);
             return JsonSerializer.Deserialize<string[]>(json)!;
+        }
+
+        private Expression[] HandleResultParseArray(PolyglotResult result)
+        {
+            if (result.Status != 0)
+            {
+                string error = result.Error != IntPtr.Zero
+                    ? Marshal.PtrToStringAnsi(result.Error) ?? "Unknown error"
+                    : "Unknown error";
+
+                if (result.Error != IntPtr.Zero)
+                    _freeString(result.Error);
+
+                throw new PolyglotException(result.Status, $"Polyglot error (status {result.Status}): {error}");
+            }
+
+            string json = result.Data != IntPtr.Zero
+                ? Marshal.PtrToStringAnsi(result.Data) ?? "[]"
+                : "[]";
+
+            _freeResult(result);
+            
+            var doc = JsonDocument.Parse(json);
+            var expressions = new Expression[doc.RootElement.GetArrayLength()];
+            int i = 0;
+            foreach (var elem in doc.RootElement.EnumerateArray())
+            {
+                expressions[i++] = new Expression(elem.Clone());
+            }
+            return expressions;
+        }
+
+        private Expression HandleResultParseOne(PolyglotResult result)
+        {
+            if (result.Status != 0)
+            {
+                string error = result.Error != IntPtr.Zero
+                    ? Marshal.PtrToStringAnsi(result.Error) ?? "Unknown error"
+                    : "Unknown error";
+
+                if (result.Error != IntPtr.Zero)
+                    _freeString(result.Error);
+
+                throw new PolyglotException(result.Status, $"Polyglot error (status {result.Status}): {error}");
+            }
+
+            string json = result.Data != IntPtr.Zero
+                ? Marshal.PtrToStringAnsi(result.Data) ?? "{}"
+                : "{}";
+
+            _freeResult(result);
+            
+            var doc = JsonDocument.Parse(json);
+            return new Expression(doc.RootElement.Clone());
         }
 
         public void Dispose()

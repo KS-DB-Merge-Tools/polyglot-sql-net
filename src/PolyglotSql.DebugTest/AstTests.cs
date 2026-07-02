@@ -16,19 +16,14 @@ public class AstTests
         Console.WriteLine("=== TestParseBasic ===");
         try
         {
-            string json = Polyglot.Parse("SELECT 1");
-            Console.WriteLine($"AST JSON length: {json.Length}");
-            Console.WriteLine($"AST JSON preview: {json.Substring(0, Math.Min(200, json.Length))}...");
-
-            var nodes = AstParser.Parse(json);
-            Console.WriteLine($"Parsed {nodes.Count} AST nodes");
-            foreach (var node in nodes)
+            var exprs = Polyglot.Parse("SELECT 1");
+            Console.WriteLine($"Parsed {exprs.Length} AST nodes");
+            foreach (var expr in exprs)
             {
-                Console.WriteLine($"  Node: {node}");
+                Console.WriteLine($"  Node JSON: {expr.ToJsonString().Substring(0, Math.Min(100, expr.ToJsonString().Length))}...");
             }
 
-            Assert.False(string.IsNullOrEmpty(json), "JSON should not be empty");
-            Assert.True(nodes.Count > 0, "Should have at least one AST node");
+            Assert.True(exprs.Length > 0, "Should have at least one AST node");
         }
         catch (Exception ex)
         {
@@ -44,18 +39,15 @@ public class AstTests
         try
         {
             string sql = "SELECT a, b, c FROM users WHERE id = 1";
-            string json = Polyglot.Parse(sql);
+            var exprs = Polyglot.Parse(sql);
             Console.WriteLine($"SQL: {sql}");
-            Console.WriteLine($"AST JSON length: {json.Length}");
-
-            var nodes = AstParser.Parse(json);
-            Console.WriteLine($"Parsed {nodes.Count} AST nodes");
-            foreach (var node in nodes)
+            Console.WriteLine($"Parsed {exprs.Length} AST nodes");
+            foreach (var expr in exprs)
             {
-                Console.WriteLine($"  Node: {node}");
+                Console.WriteLine($"  Node JSON: {expr.ToJsonString().Substring(0, Math.Min(100, expr.ToJsonString().Length))}...");
             }
 
-            Assert.True(nodes.Count > 0, "Should have at least one AST node");
+            Assert.True(exprs.Length > 0, "Should have at least one AST node");
         }
         catch (Exception ex)
         {
@@ -70,9 +62,9 @@ public class AstTests
         Console.WriteLine("=== TestParseOne ===");
         try
         {
-            string json = Polyglot.ParseOne("SELECT 1");
-            Console.WriteLine($"ParseOne JSON: {json.Substring(0, Math.Min(200, json.Length))}...");
-            Assert.False(string.IsNullOrEmpty(json), "JSON should not be empty");
+            var expr = Polyglot.ParseOne("SELECT 1");
+            Console.WriteLine($"ParseOne JSON: {expr.ToJsonString().Substring(0, Math.Min(200, expr.ToJsonString().Length))}...");
+            Assert.False(string.IsNullOrEmpty(expr.ToJsonString()), "JSON should not be empty");
         }
         catch (Exception ex)
         {
@@ -88,18 +80,11 @@ public class AstTests
         try
         {
             string sql = "SELECT COUNT(*) FROM users GROUP BY status ORDER BY count DESC LIMIT 10";
-            string json = Polyglot.Parse(sql);
+            var exprs = Polyglot.Parse(sql);
             Console.WriteLine($"SQL: {sql}");
-            Console.WriteLine($"AST JSON length: {json.Length}");
+            Console.WriteLine($"Parsed {exprs.Length} AST nodes");
 
-            var nodes = AstParser.Parse(json);
-            Console.WriteLine($"Parsed {nodes.Count} AST nodes");
-            foreach (var node in nodes)
-            {
-                Console.WriteLine($"  Node: {node}");
-            }
-
-            Assert.True(nodes.Count > 0, "Should have at least one AST node");
+            Assert.True(exprs.Length > 0, "Should have at least one AST node");
         }
         catch (Exception ex)
         {
@@ -115,18 +100,11 @@ public class AstTests
         try
         {
             string sql = "SELECT 1; SELECT 2";
-            string json = Polyglot.Parse(sql);
+            var exprs = Polyglot.Parse(sql);
             Console.WriteLine($"SQL: {sql}");
-            Console.WriteLine($"AST JSON length: {json.Length}");
+            Console.WriteLine($"Parsed {exprs.Length} AST nodes");
 
-            var nodes = AstParser.Parse(json);
-            Console.WriteLine($"Parsed {nodes.Count} AST nodes");
-            foreach (var node in nodes)
-            {
-                Console.WriteLine($"  Node: {node}");
-            }
-
-            Assert.True(nodes.Count >= 2, "Should have at least 2 AST nodes for 2 statements");
+            Assert.True(exprs.Length >= 2, "Should have at least 2 AST nodes for 2 statements");
         }
         catch (Exception ex)
         {
