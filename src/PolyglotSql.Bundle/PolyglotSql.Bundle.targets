@@ -21,6 +21,13 @@
       <Visible>false</Visible>
     </Content>
     
+    <Content Include="$(MSBuildThisFileDirectory)runtimes\win-x86\native\polyglot_sql_ffi.dll">
+      <PackagePath>runtimes/win-x86/native/polyglot_sql_ffi.dll</PackagePath>
+      <Link>polyglot_sql_ffi.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    
     <Content Include="$(MSBuildThisFileDirectory)runtimes\linux-x64\native\libpolyglot_sql_ffi.so">
       <PackagePath>runtimes/linux-x64/native/libpolyglot_sql_ffi.so</PackagePath>
       <Link>libpolyglot_sql_ffi.so</Link>
