@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -84,8 +85,8 @@ namespace PolyglotSql
             return Marshal.GetDelegateForFunctionPointer<T>(ptr);
         }
 
-        public string Tokenize(string sql, Dialect dialect = Dialect.Generic)
-            => CallNative(_tokenize, sql, dialect.ToString().ToLowerInvariant());
+        public Token[] Tokenize(string sql, Dialect dialect = Dialect.Generic)
+            => CallNativeTokenize(_tokenize, sql, dialect.ToString().ToLowerInvariant());
 
         public string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect)
             => CallNativeArray(_transpile, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant());
@@ -118,14 +119,14 @@ namespace PolyglotSql
             return CallNative(_generateDataType, json, dialect.ToString().ToLowerInvariant());
         }
 
-        private string CallNative(PolyglotTokenizeDelegate del, string sql, string dialect)
+        private Token[] CallNativeTokenize(PolyglotTokenizeDelegate del, string sql, string dialect)
         {
             IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
             IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
             try
             {
                 var result = del(sqlPtr, dialectPtr);
-                return HandleResult(result);
+                return HandleResultTokenize(result);
             }
             finally
             {
@@ -274,6 +275,36 @@ namespace PolyglotSql
 
             _freeResult(result);
             return json;
+        }
+
+        private Token[] HandleResultTokenize(PolyglotResult result)
+        {
+            if (result.Status != 0)
+            {
+                string error = result.Error != IntPtr.Zero
+                    ? Marshal.PtrToStringAnsi(result.Error) ?? "Unknown error"
+                    : "Unknown error";
+
+                if (result.Error != IntPtr.Zero)
+                    _freeString(result.Error);
+
+                throw new PolyglotException(result.Status, $"Polyglot error (status {result.Status}): {error}");
+            }
+
+            string json = result.Data != IntPtr.Zero
+                ? Marshal.PtrToStringAnsi(result.Data) ?? "[]"
+                : "[]";
+
+            _freeResult(result);
+
+            try
+            {
+                return JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.TokenArray) ?? Array.Empty<Token>();
+            }
+            catch (JsonException ex)
+            {
+                throw new PolyglotException(-1, $"Failed to deserialize tokens: {ex.Message}");
+            }
         }
 
         private string[] HandleResultArray(PolyglotResult result)

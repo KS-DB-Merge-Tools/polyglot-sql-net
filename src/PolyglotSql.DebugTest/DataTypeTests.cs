@@ -226,8 +226,7 @@ public class DataTypeTests
     [InlineData("NCHAR(10)", Dialect.TSQL)]
     [InlineData("VARCHAR(255)", Dialect.TSQL)]
     [InlineData("NVARCHAR(255)", Dialect.TSQL)]
-    [InlineData("VARCHAR(MAX)", Dialect.TSQL)]  // TEXT maps to VARCHAR(MAX) in TSQL
-    [InlineData("VARCHAR(MAX)", Dialect.TSQL)]  // NTEXT maps to VARCHAR(MAX) in TSQL
+    [InlineData("VARCHAR(MAX)", Dialect.TSQL)]  // TEXT / NTEXT maps to VARCHAR(MAX) in TSQL
     [InlineData("BINARY(16)", Dialect.TSQL)]
     [InlineData("VARBINARY(100)", Dialect.TSQL)]
     [InlineData("DATETIME", Dialect.TSQL)]

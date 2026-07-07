@@ -5,7 +5,7 @@ namespace PolyglotSql
 {
     public interface INativePolyglot
     {
-        string Tokenize(string sql, Dialect dialect = Dialect.Generic);
+        Token[] Tokenize(string sql, Dialect dialect = Dialect.Generic);
         string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect);
         string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson);
         Expression[] Parse(string sql, Dialect dialect = Dialect.Generic);
@@ -46,7 +46,7 @@ namespace PolyglotSql
             }
         }
 
-        public static string Tokenize(string sql, Dialect dialect = Dialect.Generic)
+        public static Token[] Tokenize(string sql, Dialect dialect = Dialect.Generic)
             => Provider.Tokenize(sql, dialect);
 
         public static string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect)

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PolyglotSql;
 using PolyglotSql.Bundle;
 
@@ -10,15 +11,46 @@ public class TokenizerTests
         BundleInitializer.Initialize();
     }
 
+    private static string TokenArrayToJson(Token[] tokens)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append('[');
+        for (int i = 0; i < tokens.Length; i++)
+        {
+            if (i > 0) sb.Append(',');
+            var token = tokens[i];
+            sb.Append("{\"token_type\":");
+            sb.Append((int)token.TokenType);
+            sb.Append(",\"text\":\"");
+            sb.Append(EscapeJson(token.Text));
+            sb.Append("\",\"line\":");
+            sb.Append(token.Span.Line);
+            sb.Append(",\"col\":");
+            sb.Append(token.Span.Column);
+            sb.Append(",\"start\":");
+            sb.Append(token.Span.Start);
+            sb.Append(",\"end\":");
+            sb.Append(token.Span.End);
+            sb.Append('}');
+        }
+        sb.Append(']');
+        return sb.ToString();
+    }
+
+    private static string EscapeJson(string str)
+    {
+        return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
+    }
+
     [Fact]
     public void TestNativeLibraryLoad()
     {
         Console.WriteLine("Testing native library load...");
         try
         {
-            string json = Polyglot.Tokenize("SELECT 1");
-            Console.WriteLine($"SUCCESS: Got JSON response: {json.Substring(0, Math.Min(100, json.Length))}...");
-            Assert.False(string.IsNullOrEmpty(json), "JSON should not be empty");
+            Token[] tokens = Polyglot.Tokenize("SELECT 1");
+            Console.WriteLine($"SUCCESS: Got {tokens.Length} tokens");
+            Assert.True(tokens.Length > 0, "Should have at least one token");
         }
         catch (DllNotFoundException ex)
         {
@@ -35,76 +67,76 @@ public class TokenizerTests
     [Fact]
     public void TestTokenRepr()
     {
-        var tokens = new Tokenizer().Tokenize("foo");
+        var tokens = Polyglot.Tokenize("foo", Dialect.Generic);
 
-        Console.WriteLine($"Token count: {tokens.Count}");
+        Console.WriteLine($"Token count: {tokens.Length}");
         foreach (var t in tokens)
         {
-            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Line}, col={t.Col}, start={t.Start}, end={t.End}");
+            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Span.Line} , col= {t.Span.Column}, start={t.Span.Start}, end={t.Span.End}");
         }
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.VAR, tokens[0].TokenType);
-        Assert.Equal(0, tokens[0].Line);
-        Assert.Equal(3, tokens[0].Col);
-        Assert.Equal(0, tokens[0].Start);
-        Assert.Equal(2, tokens[0].End);
+        Assert.Equal(1, tokens[0].Span.Line);
+        Assert.Equal(4, tokens[0].Span.Column);
+        Assert.Equal(0, tokens[0].Span.Start);
+        Assert.Equal(3, tokens[0].Span.End);
     }
 
     [Fact]
     public void TestSimpleWord()
     {
-        var tokens = new Tokenizer().Tokenize("foo");
+        var tokens = Polyglot.Tokenize("foo", Dialect.Generic);
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.VAR, tokens[0].TokenType);
-        Assert.Equal(3, tokens[0].Col);
+        Assert.Equal(4, tokens[0].Span.Column);
     }
 
     [Fact]
     public void TestNumber()
     {
-        var tokens = new Tokenizer().Tokenize("123");
+        var tokens = Polyglot.Tokenize("123", Dialect.Generic);
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.NUMBER, tokens[0].TokenType);
-        Assert.Equal(3, tokens[0].Col);
+        Assert.Equal(4, tokens[0].Span.Column);
     }
 
     [Fact]
     public void TestSelectKeyword()
     {
-        var tokens = new Tokenizer().Tokenize("SELECT");
+        var tokens = Polyglot.Tokenize("SELECT", Dialect.Generic);
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.SELECT, tokens[0].TokenType);
-        Assert.Equal(6, tokens[0].Col);
+        Assert.Equal(7, tokens[0].Span.Column);
     }
 
     [Fact]
     public void TestSelectOne()
     {
-        var tokens = new Tokenizer().Tokenize("SELECT 1");
+        var tokens = Polyglot.Tokenize("SELECT 1", Dialect.Generic);
 
-        Assert.Equal(2, tokens.Count);
+        Assert.Equal(2, tokens.Length);
         Assert.Equal(TokenType.SELECT, tokens[0].TokenType);
         Assert.Equal(TokenType.NUMBER, tokens[1].TokenType);
-        Assert.Equal(6, tokens[0].Col);
-        Assert.Equal(8, tokens[1].Col);
+        Assert.Equal(7, tokens[0].Span.Column);
+        Assert.Equal(9, tokens[1].Span.Column);
     }
 
     [Fact]
     public void TestCRLF()
     {
-        var tokens = new Tokenizer().Tokenize("SELECT\r\n1");
+        var tokens = Polyglot.Tokenize("SELECT\r\n1", Dialect.Generic);
 
-        Console.WriteLine($"CRLF test - token count: {tokens.Count}");
+        Console.WriteLine($"CRLF test - token count: {tokens.Length}");
         foreach (var t in tokens)
         {
-            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Line}, col={t.Col}, start={t.Start}, end={t.End}");
+            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Span.Line}, col={t.Span.Column}, start={t.Span.Start}, end={t.Span.Column}");
         }
 
-        Assert.True(tokens.Count >= 2, $"Expected at least 2 tokens, got {tokens.Count}");
+        Assert.True(tokens.Length >= 2, $"Expected at least 2 tokens, got {tokens.Length}");
         Assert.Equal(TokenType.SELECT, tokens[0].TokenType);
         Assert.Equal(TokenType.NUMBER, tokens[1].TokenType);
     }
@@ -112,38 +144,38 @@ public class TokenizerTests
     [Fact]
     public void TestMultiline()
     {
-        var tokens = new Tokenizer().Tokenize("SELECT\n1\n+2");
+        var tokens = Polyglot.Tokenize("SELECT\n1\n+2", Dialect.Generic);
 
-        Console.WriteLine($"Multiline test - token count: {tokens.Count}");
+        Console.WriteLine($"Multiline test - token count: {tokens.Length}");
         foreach (var t in tokens)
         {
-            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Line}, col={t.Col}, start={t.Start}, end={t.End}");
+            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Span.Line} , col= {t.Span.Column}, start={t.Span.Start}, end={t.Span.Column}");
         }
 
-        Assert.True(tokens.Count >= 3, $"Expected at least 3 tokens, got {tokens.Count}");
-        Assert.Equal(0, tokens[0].Line);
+        Assert.True(tokens.Length >= 3, $"Expected at least 3 tokens, got {tokens.Length}");
+        Assert.Equal(1, tokens[0].Span.Line);
     }
 
     [Fact]
     public void TestComments()
     {
-        var tokens = new Tokenizer().Tokenize("SELECT -- comment\n1");
+        var tokens = Polyglot.Tokenize("SELECT -- comment\n1", Dialect.Generic);
 
-        Console.WriteLine($"Comment test - token count: {tokens.Count}");
+        Console.WriteLine($"Comment test - token count: {tokens.Length}");
         foreach (var t in tokens)
         {
-            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Line}, col={t.Col}, comments={t.Comments?.Count ?? 0}");
+            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Span.Line}, col={t.Span.Column}, comments={t.Comments?.Length ?? 0}");
         }
 
-        Assert.True(tokens.Count >= 2, $"Expected at least 2 tokens, got {tokens.Count}");
+        Assert.True(tokens.Length >= 2, $"Expected at least 2 tokens, got {tokens.Length}");
     }
 
     [Fact]
     public void TestSpaceKeywords()
     {
-        var tokens = new Tokenizer().Tokenize("CHARACTER VARYING");
+        var tokens = Polyglot.Tokenize("CHARACTER VARYING", Dialect.Generic);
 
-        Console.WriteLine($"Space keyword test - token count: {tokens.Count}");
+        Console.WriteLine($"Space keyword test - token count: {tokens.Length}");
         foreach (var t in tokens)
         {
             Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}'");
@@ -153,9 +185,9 @@ public class TokenizerTests
     [Fact]
     public void TestJinja()
     {
-        var tokens = new Tokenizer().Tokenize("{{ foo }}");
+        var tokens = Polyglot.Tokenize("{{ foo }}", Dialect.Generic);
 
-        Console.WriteLine($"Jinja test - token count: {tokens.Count}");
+        Console.WriteLine($"Jinja test - token count: {tokens.Length}");
         foreach (var t in tokens)
         {
             Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}'");
@@ -168,8 +200,8 @@ public class TokenizerTests
         Console.WriteLine("Command test - checking what happens with backslash command");
         try
         {
-            var tokens = new Tokenizer().Tokenize("\\foo");
-            Console.WriteLine($"Command test - token count: {tokens.Count}");
+            var tokens = Polyglot.Tokenize("\\foo", Dialect.Generic);
+            Console.WriteLine($"Command test - token count: {tokens.Length}");
             foreach (var t in tokens)
             {
                 Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}'");
@@ -184,30 +216,30 @@ public class TokenizerTests
     [Fact]
     public void TestUnicodeIdentifiers()
     {
-        var tokens = new Tokenizer().Tokenize("SELECT 日本語");
+        var tokens = Polyglot.Tokenize("SELECT 日本語", Dialect.Generic);
 
-        Console.WriteLine($"Unicode test - token count: {tokens.Count}");
+        Console.WriteLine($"Unicode test - token count: {tokens.Length}");
         foreach (var t in tokens)
         {
             Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}'");
         }
 
-        Assert.True(tokens.Count >= 2, $"Expected at least 2 tokens, got {tokens.Count}");
+        Assert.True(tokens.Length >= 2, $"Expected at least 2 tokens, got {tokens.Length}");
     }
 
     [Fact]
     public void TestComplexQuery()
     {
         var sql = "SELECT a, b FROM t WHERE c = 1 AND d > 2";
-        var tokens = new Tokenizer().Tokenize(sql);
+        var tokens = Polyglot.Tokenize(sql, Dialect.Generic);
 
-        Console.WriteLine($"Complex query test - token count: {tokens.Count}");
+        Console.WriteLine($"Complex query test - token count: {tokens.Length}");
         foreach (var t in tokens)
         {
-            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Line}, col={t.Col}");
+            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}', line={t.Span.Line}, col={t.Span.Column}");
         }
 
-        Assert.True(tokens.Count > 5, $"Expected more than 5 tokens, got {tokens.Count}");
+        Assert.True(tokens.Length > 5, $"Expected more than 5 tokens, got {tokens.Length}");
     }
 
     [Fact]
@@ -216,8 +248,8 @@ public class TokenizerTests
         Console.WriteLine("Error handling test");
         try
         {
-            var tokens = new Tokenizer().Tokenize("SELECT <<--\n1");
-            Console.WriteLine($"  Token count: {tokens.Count}");
+            var tokens = Polyglot.Tokenize("SELECT <<--\n1", Dialect.Generic);
+            Console.WriteLine($"  Token count: {tokens.Length}");
             foreach (var t in tokens)
             {
                 Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}'");
@@ -232,16 +264,18 @@ public class TokenizerTests
     [Fact]
     public void TestRawJsonOutput()
     {
-        string json = Polyglot.Tokenize("SELECT 1");
+        Token[] tokens = Polyglot.Tokenize("SELECT 1");
+        string json = TokenArrayToJson(tokens);
         Console.WriteLine($"Raw JSON: {json}");
         Assert.False(string.IsNullOrEmpty(json), "JSON output should not be empty");
+        Assert.Contains("SELECT", json);
     }
 
     [Fact]
     public void TestRawJsonError()
     {
-        string json = Polyglot.Tokenize("SELECT <<--\n1");
-        Console.WriteLine($"Raw JSON (error): {json}");
-        Assert.False(string.IsNullOrEmpty(json), "JSON output should not be empty");
+        Token[] tokens = Polyglot.Tokenize("SELECT <<--\n1");
+        Console.WriteLine($"Raw JSON (error): {tokens.Length} tokens");
+        Assert.True(tokens.Length > 0, "Should have tokens");
     }
 }

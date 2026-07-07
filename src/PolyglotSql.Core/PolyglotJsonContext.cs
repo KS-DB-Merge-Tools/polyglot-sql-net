@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 namespace PolyglotSql
 {
     [JsonSerializable(typeof(string[]))]
+    [JsonSerializable(typeof(Token[]))]
+    [JsonSerializable(typeof(TokenType))]
     [JsonSerializable(typeof(DataType))]
     [JsonSerializable(typeof(StructField))]
     [JsonSerializable(typeof(UnionField))]
