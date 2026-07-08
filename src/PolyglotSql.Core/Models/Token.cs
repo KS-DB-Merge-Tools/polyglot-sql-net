@@ -28,7 +28,7 @@ namespace PolyglotSql.Models
         }
     }
 
-    public class Token
+    public record Token
     {
         [JsonPropertyName("token_type")]
         [JsonConverter(typeof(TokenTypeJsonConverter))]
@@ -47,7 +47,7 @@ namespace PolyglotSql.Models
         public string[] TrailingComments { get; set; }
     }
 
-    public class Span
+    public record Span
     {
         [JsonPropertyName("start")]
         public int Start { get; set; }

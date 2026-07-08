@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
 {
-    public class FormatGuardOptions
+    public record FormatGuardOptions
     {
         [JsonPropertyName("maxInputBytes")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

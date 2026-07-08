@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
 {
-    public class TranspileOptions
+    public record TranspileOptions
     {
         [JsonPropertyName("pretty")]
         public bool Pretty { get; set; }

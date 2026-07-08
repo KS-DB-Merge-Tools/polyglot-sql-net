@@ -15,7 +15,7 @@ namespace PolyglotSql.Models
         Keep
     }
 
-    public class DiffEdit
+    public record DiffEdit
     {
         [JsonPropertyName("type")]
         public DiffEditType Type { get; set; } = DiffEditType.Unknown;
@@ -33,7 +33,7 @@ namespace PolyglotSql.Models
         public Expression Target { get; set; }
     }
 
-    public class DiffResult
+    public record DiffResult
     {
         public List<DiffEdit> Edits { get; set; } = new List<DiffEdit>();
 

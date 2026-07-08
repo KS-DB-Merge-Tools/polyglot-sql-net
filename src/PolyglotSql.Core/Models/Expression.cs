@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 namespace PolyglotSql.Models
 {
     [JsonConverter(typeof(ExpressionJsonConverter))]
-    public readonly struct Expression
+    public record Expression
     {
-        public readonly JsonElement Json;
+        public JsonElement Json { get; }
 
         internal Expression(JsonElement json)
         {
