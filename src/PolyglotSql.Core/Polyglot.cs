@@ -11,6 +11,7 @@ namespace PolyglotSql
         string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, TranspileOptions options);
         string[] Format(string sql, Dialect dialect);
         string[] FormatWithOptions(string sql, Dialect dialect, FormatGuardOptions options);
+        string[] Optimize(string sql, Dialect dialect);
         Expression[] Parse(string sql, Dialect dialect = Dialect.Generic);
         Expression ParseOne(string sql, Dialect dialect = Dialect.Generic);
         DiffResult Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic);
@@ -63,6 +64,9 @@ namespace PolyglotSql
 
         public static string[] FormatWithOptions(string sql, Dialect dialect, FormatGuardOptions options)
             => Provider.FormatWithOptions(sql, dialect, options);
+
+        public static string[] Optimize(string sql, Dialect dialect)
+            => Provider.Optimize(sql, dialect);
 
         public static Expression[] Parse(string sql, Dialect dialect = Dialect.Generic)
             => Provider.Parse(sql, dialect);
