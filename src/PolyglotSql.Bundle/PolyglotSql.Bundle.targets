@@ -1,38 +1,18 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- net framework - keep runtimes folder -->
-  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
-    <None Include="$(MSBuildThisFileDirectory)runtimes\win-x64\native\polyglot_sql_ffi.dll">
-      <Link>runtimes\win-x64\native\polyglot_sql_ffi.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(MSBuildThisFileDirectory)runtimes\linux-x64\native\libpolyglot_sql_ffi.so">
-      <Link>runtimes\linux-x64\native\libpolyglot_sql_ffi.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <!-- Copy runtimes folder only for legacy netframework -->
+    <ItemGroup Condition="('$(TargetFrameworkVersion)' != '' And $(TargetFrameworkVersion.StartsWith('v4'))) Or ('$(TargetFramework)' != '' And $(TargetFramework.StartsWith('net4')))">
 
-  <!-- to the root otherwise -->
-  <ItemGroup Condition="!$(TargetFramework.StartsWith('net4'))">
-    <Content Include="$(MSBuildThisFileDirectory)runtimes\win-x64\native\polyglot_sql_ffi.dll">
-      <PackagePath>runtimes/win-x64/native/polyglot_sql_ffi.dll</PackagePath>
-      <Link>polyglot_sql_ffi.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-    
-    <Content Include="$(MSBuildThisFileDirectory)runtimes\win-x86\native\polyglot_sql_ffi.dll">
-      <PackagePath>runtimes/win-x86/native/polyglot_sql_ffi.dll</PackagePath>
-      <Link>polyglot_sql_ffi.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-    
-    <Content Include="$(MSBuildThisFileDirectory)runtimes\linux-x64\native\libpolyglot_sql_ffi.so">
-      <PackagePath>runtimes/linux-x64/native/libpolyglot_sql_ffi.so</PackagePath>
-      <Link>libpolyglot_sql_ffi.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
+        <!-- Inside NuGet package this .targets sits in build/, 
+         but runtimes folder is level up in the package root -->
+        <_PolyglotPackageFiles Include="$(MSBuildThisFileDirectory)..\runtimes\**\*" />
+
+        <Content Include="@(_PolyglotPackageFiles)">
+            <Link>runtimes\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <PublishState>Included</PublishState>
+            <Visible>False</Visible>
+            <Pack>false</Pack>
+        </Content>
+    </ItemGroup>
 </Project>

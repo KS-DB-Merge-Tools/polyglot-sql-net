@@ -1,5 +1,6 @@
 using PolyglotSql;
 using PolyglotSql.Bundle;
+using PolyglotSql.Models;
 
 namespace SqlGlotDotNet.DebugTest;
 

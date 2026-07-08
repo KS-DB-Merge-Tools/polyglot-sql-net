@@ -1,6 +1,6 @@
 using System;
 
-namespace PolyglotSql
+namespace PolyglotSql.Models
 {
     public enum TokenType
     {

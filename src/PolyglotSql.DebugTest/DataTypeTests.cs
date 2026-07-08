@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using PolyglotSql;
 using PolyglotSql.Bundle;
+using PolyglotSql.Models;
 
 namespace SqlGlotDotNet.DebugTest;
 

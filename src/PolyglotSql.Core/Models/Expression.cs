@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PolyglotSql
+namespace PolyglotSql.Models
 {
     [JsonConverter(typeof(ExpressionJsonConverter))]
     public readonly struct Expression

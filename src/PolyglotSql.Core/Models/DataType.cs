@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PolyglotSql
+namespace PolyglotSql.Models
 {
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "data_type")]
     [JsonDerivedType(typeof(DataTypeBool), "boolean")]

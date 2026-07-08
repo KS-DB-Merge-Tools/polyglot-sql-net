@@ -1,4 +1,4 @@
-namespace PolyglotSql
+namespace PolyglotSql.Models
 {
     public enum Dialect
     {

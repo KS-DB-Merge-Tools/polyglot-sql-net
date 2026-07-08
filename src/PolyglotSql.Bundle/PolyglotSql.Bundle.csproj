@@ -7,18 +7,34 @@
     <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">netstandard2.0;net8.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-local</Version>
+    <PackageId>PolyglotSql.Bundle</PackageId>
+	
+	<!-- For .sln builds from VS, level up from $(SolutionDir) -->
+	<PackageOutputPath Condition="'$(SolutionDir)' != ''">$(SolutionDir)..\LocalPackages\</PackageOutputPath>
+  
+	<!-- For dotnet pack of concrete csproj, 2 levels up from $(SolutionDir) -->
+	<PackageOutputPath Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\LocalPackages\</PackageOutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\PolyglotSql.Core\PolyglotSql.Core.csproj" />
-  </ItemGroup>
+	<!-- ProjectReference for non-package build -->
+	<ItemGroup Condition="'$(MSBuildPackageType)' != 'Package'">
+	  <ProjectReference Include="..\PolyglotSql.Core\PolyglotSql.Core.csproj" />
+	</ItemGroup>
+
+	<!-- PackageReference for package build -->
+	<ItemGroup Condition="'$(MSBuildPackageType)' == 'Package'">
+	  <PackageReference Include="PolyglotSql.Core" Version="$(Version)" />
+	</ItemGroup>
 
   <!-- for PackageReference -->
   <ItemGroup>
     <None Include="runtimes\**\*" Pack="true" PackagePath="runtimes\" />
-    <None Include="PolyglotSql.Bundle.targets" Pack="true" PackagePath="build\YourLib.Bundle.targets" />
+    <None Include="PolyglotSql.Bundle.targets" Pack="true" PackagePath="build\PolyglotSql.Bundle.targets" />
+    <!-- for non-direct reference -->
+    <None Include="PolyglotSql.Bundle.targets" Pack="true" PackagePath="buildTransitive\PolyglotSql.Bundle.targets" />
   </ItemGroup>
 
   <!-- for ProjectReference -->
-  <Import Project="PolyglotSql.Bundle.targets" />
+  <!-- Import Project="PolyglotSql.Bundle.targets" /-->
 </Project>

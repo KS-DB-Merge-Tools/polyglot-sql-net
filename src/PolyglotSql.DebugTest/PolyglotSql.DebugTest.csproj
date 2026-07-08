@@ -16,6 +16,17 @@
 
   </PropertyGroup>
 
+  <!-- In Bundle these binaries are included in package and not copied with ProjectReference
+	   so we include them explicitely here, linux and win64 are enough -->
+  <ItemGroup>
+    <None Include="..\PolyglotSql.Bundle\runtimes\linux-x64\native\libpolyglot_sql_ffi.so" Link="libpolyglot_sql_ffi.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\PolyglotSql.Bundle\runtimes\win-x64\native\polyglot_sql_ffi.dll" Link="polyglot_sql_ffi.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
