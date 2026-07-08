@@ -34,6 +34,12 @@ namespace PolyglotSql
         private delegate PolyglotResult PolyglotTranspileWithOptionsDelegate(IntPtr sql, IntPtr fromDialect, IntPtr toDialect, IntPtr optionsJson);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotFormatDelegate(IntPtr sql, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotFormatWithOptionsDelegate(IntPtr sql, IntPtr dialect, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate PolyglotResult PolyglotParseDelegate(IntPtr sql, IntPtr dialect);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -57,6 +63,8 @@ namespace PolyglotSql
         private PolyglotTokenizeDelegate _tokenize;
         private PolyglotTranspileDelegate _transpile;
         private PolyglotTranspileWithOptionsDelegate _transpileWithOptions;
+        private PolyglotFormatDelegate _format;
+        private PolyglotFormatWithOptionsDelegate _formatWithOptions;
         private PolyglotParseDelegate _parse;
         private PolyglotParseOneDelegate _parseOne;
         private PolyglotDiffDelegate _diff;
@@ -72,6 +80,8 @@ namespace PolyglotSql
             _tokenize = LoadDelegate<PolyglotTokenizeDelegate>("polyglot_tokenize");
             _transpile = LoadDelegate<PolyglotTranspileDelegate>("polyglot_transpile");
             _transpileWithOptions = LoadDelegate<PolyglotTranspileWithOptionsDelegate>("polyglot_transpile_with_options");
+            _format = LoadDelegate<PolyglotFormatDelegate>("polyglot_format");
+            _formatWithOptions = LoadDelegate<PolyglotFormatWithOptionsDelegate>("polyglot_format_with_options");
             _parse = LoadDelegate<PolyglotParseDelegate>("polyglot_parse");
             _parseOne = LoadDelegate<PolyglotParseOneDelegate>("polyglot_parse_one");
             _diff = LoadDelegate<PolyglotDiffDelegate>("polyglot_diff");
@@ -97,6 +107,15 @@ namespace PolyglotSql
         {
             string optionsJson = JsonSerializer.Serialize(options);
             return CallNativeArray(_transpileWithOptions, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant(), optionsJson);
+        }
+
+        public string[] Format(string sql, Dialect dialect)
+            => CallNativeArray(_format, sql, dialect.ToString().ToLowerInvariant());
+
+        public string[] FormatWithOptions(string sql, Dialect dialect, FormatGuardOptions options)
+        {
+            string optionsJson = JsonSerializer.Serialize(options);
+            return CallNativeArray(_formatWithOptions, sql, dialect.ToString().ToLowerInvariant(), optionsJson);
         }
 
         public Expression[] Parse(string sql, Dialect dialect = Dialect.Generic)
@@ -185,6 +204,40 @@ namespace PolyglotSql
             {
                 Marshal.FreeHGlobal(sqlPtr);
                 Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private string[] CallNativeArray(PolyglotFormatDelegate del, string sql, string dialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(sqlPtr, dialectPtr);
+                return HandleResultArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private string[] CallNativeArray(PolyglotFormatWithOptionsDelegate del, string sql, string dialect, string options)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(options);
+            try
+            {
+                var result = del(sqlPtr, dialectPtr, optPtr);
+                return HandleResultArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+                Marshal.FreeHGlobal(optPtr);
             }
         }
 
