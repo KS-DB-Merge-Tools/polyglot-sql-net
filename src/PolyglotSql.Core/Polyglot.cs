@@ -8,7 +8,7 @@ namespace PolyglotSql
     {
         Token[] Tokenize(string sql, Dialect dialect = Dialect.Generic);
         string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect);
-        string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson);
+        string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, TranspileOptions options);
         Expression[] Parse(string sql, Dialect dialect = Dialect.Generic);
         Expression ParseOne(string sql, Dialect dialect = Dialect.Generic);
         DiffResult Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic);
@@ -53,8 +53,8 @@ namespace PolyglotSql
         public static string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect)
             => Provider.Transpile(sql, fromDialect, toDialect);
 
-        public static string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson)
-            => Provider.TranspileWithOptions(sql, fromDialect, toDialect, optionsJson);
+        public static string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, TranspileOptions options)
+            => Provider.TranspileWithOptions(sql, fromDialect, toDialect, options);
 
         public static Expression[] Parse(string sql, Dialect dialect = Dialect.Generic)
             => Provider.Parse(sql, dialect);

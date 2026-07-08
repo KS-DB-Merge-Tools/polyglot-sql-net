@@ -93,8 +93,11 @@ namespace PolyglotSql
         public string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect)
             => CallNativeArray(_transpile, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant());
 
-        public string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, string optionsJson)
-            => CallNativeArray(_transpileWithOptions, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant(), optionsJson);
+        public string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, TranspileOptions options)
+        {
+            string optionsJson = JsonSerializer.Serialize(options);
+            return CallNativeArray(_transpileWithOptions, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant(), optionsJson);
+        }
 
         public Expression[] Parse(string sql, Dialect dialect = Dialect.Generic)
             => CallNativeParse(_parse, sql, dialect.ToString().ToLowerInvariant());

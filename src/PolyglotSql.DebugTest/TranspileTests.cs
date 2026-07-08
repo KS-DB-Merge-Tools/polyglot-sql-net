@@ -1,6 +1,7 @@
 using PolyglotSql;
 using PolyglotSql.Bundle;
 using PolyglotSql.Models;
+using Xunit;
 
 namespace SqlGlotDotNet.DebugTest;
 
@@ -55,8 +56,7 @@ public class TranspileTests
         Console.WriteLine("=== TestTranspileWithOptions ===");
         try
         {
-            string optionsJson = "{\"pretty\": true}";
-            string[] result = Polyglot.TranspileWithOptions("SELECT 1", Dialect.Generic, Dialect.Generic, optionsJson);
+            string[] result = Polyglot.TranspileWithOptions("SELECT 1", Dialect.Generic, Dialect.Generic, new TranspileOptions { Pretty = true });
             Console.WriteLine($"Result count: {result.Length}");
             foreach (var r in result)
                 Console.WriteLine($"  Item: {r}");
@@ -122,5 +122,49 @@ public class TranspileTests
         {
             Console.WriteLine($"Expected error: {ex.GetType().Name}: {ex.Message}");
         }
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void TranspileOptionPretty(bool pretty, bool expectMultiline)
+    {
+        var opts = new TranspileOptions { Pretty = pretty };
+        string[] result = Polyglot.TranspileWithOptions("SELECT 1", Dialect.Generic, Dialect.Generic, opts);
+        Assert.NotEmpty(result);
+        bool multiline = result.Any(r => r.Contains('\n'));
+        Assert.Equal(expectMultiline, multiline);
+    }
+
+    [Theory]
+    [InlineData(UnsupportedLevel.warn, false)]
+    [InlineData(UnsupportedLevel.raise, true)]
+    public void TranspileOptionUnsupportedLevel(UnsupportedLevel level, bool expectThrow)
+    {
+        var opts = new TranspileOptions { UnsupportedLevel = level };
+        string sql = "SELECT JSONB_BUILD_OBJECT('a', 1) FROM t";
+        if (expectThrow)
+        {
+            Assert.Throws<PolyglotException>(() =>
+                Polyglot.TranspileWithOptions(sql, Dialect.PostgreSQL, Dialect.MySQL, opts));
+        }
+        else
+        {
+            string[] result = Polyglot.TranspileWithOptions(sql, Dialect.PostgreSQL, Dialect.MySQL, opts);
+            Assert.NotEmpty(result);
+        }
+    }
+
+    [Theory]
+    [InlineData(1, true)]
+    [InlineData(10, false)]
+    public void TranspileOptionMaxUnsupported(int maxUnsupported, bool expectTruncated)
+    {
+        var opts = new TranspileOptions { UnsupportedLevel = UnsupportedLevel.raise, MaxUnsupported = maxUnsupported };
+        string sql = "SELECT JSONB_BUILD_OBJECT('a', 1), TO_TSVECTOR('b') FROM t LATERAL JOIN u ON t.id = u.id";
+        var ex = Assert.Throws<PolyglotException>(() =>
+            Polyglot.TranspileWithOptions(sql, Dialect.PostgreSQL, Dialect.TSQL, opts));
+        bool truncated = ex.Message.Contains("more");
+        Assert.Equal(expectTruncated, truncated);
     }
 }
