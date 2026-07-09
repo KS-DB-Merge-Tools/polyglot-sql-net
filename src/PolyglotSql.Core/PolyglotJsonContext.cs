@@ -15,6 +15,12 @@ namespace PolyglotSql
     [JsonSerializable(typeof(UnionField))]
     [JsonSerializable(typeof(ObjectField))]
     [JsonSerializable(typeof(DiffResult))]
+    [JsonSerializable(typeof(ValidationSchema))]
+    [JsonSerializable(typeof(SchemaTable))]
+    [JsonSerializable(typeof(SchemaColumn))]
+    [JsonSerializable(typeof(QualifyTablesOptions))]
+    [JsonSerializable(typeof(RenameTablesOptions))]
+    [JsonSerializable(typeof(Dictionary<string, string>))]
     [JsonSerializable(typeof(Expression))]
     public partial class PolyglotJsonContext : JsonSerializerContext
     {

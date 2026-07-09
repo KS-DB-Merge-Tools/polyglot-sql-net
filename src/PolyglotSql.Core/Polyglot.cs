@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using PolyglotSql.Models;
 
@@ -17,6 +18,11 @@ namespace PolyglotSql
         DiffResult Diff(string sql1, string sql2, Dialect dialect = Dialect.Generic);
         DataType ParseDataType(string sql, Dialect dialect = Dialect.Generic);
         string GenerateDataType(DataType dataType, Dialect dialect = Dialect.Generic);
+        LineageNode Lineage(string columnName, string sql, Dialect dialect = Dialect.Generic);
+        LineageNode LineageWithSchema(string columnName, string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic);
+        string[] SourceTables(string columnName, string sql, Dialect dialect = Dialect.Generic);
+        Expression[] QualifyTables(Expression[] ast, QualifyTablesOptions options = null);
+        Expression[] RenameTablesWithOptions(Expression[] ast, Dictionary<string, string> mapping, RenameTablesOptions options = null);
     }
 
     public static class Polyglot
@@ -82,6 +88,21 @@ namespace PolyglotSql
 
         public static string GenerateDataType(DataType dataType, Dialect dialect = Dialect.Generic)
             => Provider.GenerateDataType(dataType, dialect);
+
+        public static LineageNode Lineage(string columnName, string sql, Dialect dialect = Dialect.Generic)
+            => Provider.Lineage(columnName, sql, dialect);
+
+        public static LineageNode LineageWithSchema(string columnName, string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic)
+            => Provider.LineageWithSchema(columnName, sql, schema, dialect);
+
+        public static string[] SourceTables(string columnName, string sql, Dialect dialect = Dialect.Generic)
+            => Provider.SourceTables(columnName, sql, dialect);
+
+        public static Expression[] QualifyTables(Expression[] ast, QualifyTablesOptions options = null)
+            => Provider.QualifyTables(ast, options);
+
+        public static Expression[] RenameTablesWithOptions(Expression[] ast, Dictionary<string, string> mapping, RenameTablesOptions options = null)
+            => Provider.RenameTablesWithOptions(ast, mapping, options);
 
         public static string TranspileDataType(string sql, Dialect fromDialect, Dialect toDialect)
         {

@@ -7,18 +7,18 @@ namespace PolyglotSql.Models
 {
     public enum DiffEditType
     {
-        Unknown,
-        Insert,
-        Remove,
-        Move,
-        Update,
-        Keep
+        unknown,
+        insert,
+        remove,
+        move,
+        update,
+        keep
     }
 
     public record DiffEdit
     {
         [JsonPropertyName("type")]
-        public DiffEditType Type { get; set; } = DiffEditType.Unknown;
+        public DiffEditType Type { get; set; } = DiffEditType.unknown;
 
         [JsonPropertyName("expression")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -64,7 +64,7 @@ namespace PolyglotSql.Models
                 var typeString = elem.GetProperty("type").GetString() ?? "";
                 var edit = new DiffEdit
                 {
-                    Type = Enum.TryParse<DiffEditType>(typeString, true, out var parsedType) ? parsedType : DiffEditType.Unknown
+                    Type = Enum.TryParse<DiffEditType>(typeString, false, out var parsedType) ? parsedType : DiffEditType.unknown
                 };
 
                 if (elem.TryGetProperty("expression", out var expr))
@@ -93,11 +93,11 @@ namespace PolyglotSql.Models
             {
                 switch (edit.Type)
                 {
-                    case DiffEditType.Insert: insertCount++; break;
-                    case DiffEditType.Remove: removeCount++; break;
-                    case DiffEditType.Move: moveCount++; break;
-                    case DiffEditType.Update: updateCount++; break;
-                    case DiffEditType.Keep: keepCount++; break;
+                    case DiffEditType.insert: insertCount++; break;
+                    case DiffEditType.remove: removeCount++; break;
+                    case DiffEditType.move: moveCount++; break;
+                    case DiffEditType.update: updateCount++; break;
+                    case DiffEditType.keep: keepCount++; break;
                 }
             }
             result.InsertCount = insertCount;
