@@ -21,6 +21,18 @@ namespace PolyglotSql
     [JsonSerializable(typeof(QualifyTablesOptions))]
     [JsonSerializable(typeof(RenameTablesOptions))]
     [JsonSerializable(typeof(Dictionary<string, string>))]
+    [JsonSerializable(typeof(OpenLineageOptions))]
+    [JsonSerializable(typeof(OpenLineageDatasetId))]
+    [JsonSerializable(typeof(Dictionary<string, OpenLineageDatasetId>))]
+    [JsonSerializable(typeof(OpenLineageRunEventType))]
+    [JsonSerializable(typeof(OpenLineageColumnLineageResult))]
+    [JsonSerializable(typeof(ColumnLineageDatasetFacet))]
+    [JsonSerializable(typeof(ColumnLineageField))]
+    [JsonSerializable(typeof(OpenLineageInputField))]
+    [JsonSerializable(typeof(OpenLineageTransformation))]
+    [JsonSerializable(typeof(OpenLineageDataset))]
+    [JsonSerializable(typeof(OpenLineageWarning))]
+    [JsonSerializable(typeof(OpenLineageEventResult))]
     [JsonSerializable(typeof(Expression))]
     public partial class PolyglotJsonContext : JsonSerializerContext
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using PolyglotSql.Models;
 
@@ -70,6 +71,15 @@ namespace PolyglotSql
         private delegate PolyglotResult PolyglotRenameTablesDelegate(IntPtr astJson, IntPtr mappingJson, IntPtr optionsJson);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotOpenLineageColumnLineageDelegate(IntPtr sql, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotOpenLineageJobEventDelegate(IntPtr sql, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotOpenLineageRunEventDelegate(IntPtr sql, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void PolyglotFreeStringDelegate(IntPtr s);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -91,6 +101,9 @@ namespace PolyglotSql
         private PolyglotLineageDelegate _sourceTables;
         private PolyglotQualifyTablesDelegate _qualifyTables;
         private PolyglotRenameTablesDelegate _renameTables;
+        private PolyglotOpenLineageColumnLineageDelegate _openLineageColumnLineage;
+        private PolyglotOpenLineageJobEventDelegate _openLineageJobEvent;
+        private PolyglotOpenLineageRunEventDelegate _openLineageRunEvent;
         private PolyglotFreeStringDelegate _freeString;
         private PolyglotFreeResultDelegate _freeResult;
 
@@ -114,6 +127,9 @@ namespace PolyglotSql
             _sourceTables = LoadDelegate<PolyglotLineageDelegate>("polyglot_source_tables");
             _qualifyTables = LoadDelegate<PolyglotQualifyTablesDelegate>("polyglot_qualify_tables");
             _renameTables = LoadDelegate<PolyglotRenameTablesDelegate>("polyglot_rename_tables_with_options");
+            _openLineageColumnLineage = LoadDelegate<PolyglotOpenLineageColumnLineageDelegate>("polyglot_openlineage_column_lineage");
+            _openLineageJobEvent = LoadDelegate<PolyglotOpenLineageJobEventDelegate>("polyglot_openlineage_job_event");
+            _openLineageRunEvent = LoadDelegate<PolyglotOpenLineageRunEventDelegate>("polyglot_openlineage_run_event");
             _freeString = LoadDelegate<PolyglotFreeStringDelegate>("polyglot_free_string");
             _freeResult = LoadDelegate<PolyglotFreeResultDelegate>("polyglot_free_result");
         }
@@ -204,6 +220,24 @@ namespace PolyglotSql
             string mappingJson = JsonSerializer.Serialize(mapping ?? new Dictionary<string, string>(), PolyglotJsonContext.Default.DictionaryStringString);
             string optionsJson = JsonSerializer.Serialize(options ?? new RenameTablesOptions(), PolyglotJsonContext.Default.RenameTablesOptions);
             return CallNativeRenameTables(_renameTables, astJson, mappingJson, optionsJson);
+        }
+
+        public OpenLineageColumnLineageResult OpenLineageColumnLineage(string sql, OpenLineageOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new OpenLineageOptions(), PolyglotJsonContext.Default.OpenLineageOptions);
+            return CallNativeOpenLineage(_openLineageColumnLineage, sql, optionsJson, PolyglotJsonContext.Default.OpenLineageColumnLineageResult);
+        }
+
+        public OpenLineageEventResult OpenLineageJobEvent(string sql, OpenLineageOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new OpenLineageOptions(), PolyglotJsonContext.Default.OpenLineageOptions);
+            return CallNativeOpenLineage(_openLineageJobEvent, sql, optionsJson, PolyglotJsonContext.Default.OpenLineageEventResult);
+        }
+
+        public OpenLineageEventResult OpenLineageRunEvent(string sql, OpenLineageOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new OpenLineageOptions(), PolyglotJsonContext.Default.OpenLineageOptions);
+            return CallNativeOpenLineage(_openLineageRunEvent, sql, optionsJson, PolyglotJsonContext.Default.OpenLineageEventResult);
         }
 
         private Token[] CallNativeTokenize(PolyglotTokenizeDelegate del, string sql, string dialect)
@@ -479,6 +513,85 @@ namespace PolyglotSql
                 Marshal.FreeHGlobal(astPtr);
                 Marshal.FreeHGlobal(mappingPtr);
                 Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private T CallNativeOpenLineage<T>(PolyglotOpenLineageColumnLineageDelegate del, string sql, string optionsJson, JsonTypeInfo<T> typeInfo)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(optionsJson);
+            try
+            {
+                var result = del(sqlPtr, optPtr);
+                return HandleResultOpenLineage(result, typeInfo);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private T CallNativeOpenLineage<T>(PolyglotOpenLineageJobEventDelegate del, string sql, string optionsJson, JsonTypeInfo<T> typeInfo)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(optionsJson);
+            try
+            {
+                var result = del(sqlPtr, optPtr);
+                return HandleResultOpenLineage(result, typeInfo);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private T CallNativeOpenLineage<T>(PolyglotOpenLineageRunEventDelegate del, string sql, string optionsJson, JsonTypeInfo<T> typeInfo)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(optionsJson);
+            try
+            {
+                var result = del(sqlPtr, optPtr);
+                return HandleResultOpenLineage(result, typeInfo);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private T HandleResultOpenLineage<T>(PolyglotResult result, JsonTypeInfo<T> typeInfo)
+        {
+            if (result.Status != 0)
+            {
+                string error = result.Error != IntPtr.Zero
+                    ? Marshal.PtrToStringAnsi(result.Error) ?? "Unknown error"
+                    : "Unknown error";
+
+                if (result.Error != IntPtr.Zero)
+                    _freeString(result.Error);
+
+                throw new PolyglotException(result.Status, $"Polyglot error (status {result.Status}): {error}");
+            }
+
+            string json = result.Data != IntPtr.Zero
+                ? Marshal.PtrToStringAnsi(result.Data) ?? "{}"
+                : "{}";
+
+            _freeResult(result);
+
+            try
+            {
+                return JsonSerializer.Deserialize(json, typeInfo)
+                    ?? throw new PolyglotException(-1, "OpenLineage result deserialization returned null");
+            }
+            catch (JsonException ex)
+            {
+                throw new PolyglotException(-1, $"Failed to deserialize OpenLineage result: {ex.Message}");
             }
         }
 

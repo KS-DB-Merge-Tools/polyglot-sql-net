@@ -23,6 +23,9 @@ namespace PolyglotSql
         string[] SourceTables(string columnName, string sql, Dialect dialect = Dialect.Generic);
         Expression[] QualifyTables(Expression[] ast, QualifyTablesOptions options = null);
         Expression[] RenameTablesWithOptions(Expression[] ast, Dictionary<string, string> mapping, RenameTablesOptions options = null);
+        OpenLineageColumnLineageResult OpenLineageColumnLineage(string sql, OpenLineageOptions options = null);
+        OpenLineageEventResult OpenLineageJobEvent(string sql, OpenLineageOptions options = null);
+        OpenLineageEventResult OpenLineageRunEvent(string sql, OpenLineageOptions options = null);
     }
 
     public static class Polyglot
@@ -103,6 +106,15 @@ namespace PolyglotSql
 
         public static Expression[] RenameTablesWithOptions(Expression[] ast, Dictionary<string, string> mapping, RenameTablesOptions options = null)
             => Provider.RenameTablesWithOptions(ast, mapping, options);
+
+        public static OpenLineageColumnLineageResult OpenLineageColumnLineage(string sql, OpenLineageOptions options = null)
+            => Provider.OpenLineageColumnLineage(sql, options);
+
+        public static OpenLineageEventResult OpenLineageJobEvent(string sql, OpenLineageOptions options = null)
+            => Provider.OpenLineageJobEvent(sql, options);
+
+        public static OpenLineageEventResult OpenLineageRunEvent(string sql, OpenLineageOptions options = null)
+            => Provider.OpenLineageRunEvent(sql, options);
 
         public static string TranspileDataType(string sql, Dialect fromDialect, Dialect toDialect)
         {
