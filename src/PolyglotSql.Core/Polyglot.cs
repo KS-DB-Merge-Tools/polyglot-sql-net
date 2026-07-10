@@ -11,7 +11,7 @@ namespace PolyglotSql
         internal static INativePolyglot _provider; // internal to test dialect list
         private static readonly object _lock = new object();
 
-        internal static void RegisterProvider(INativePolyglot provider)
+        public static void RegisterProvider(INativePolyglot provider)
         {
             if (_provider != null)
                 return;

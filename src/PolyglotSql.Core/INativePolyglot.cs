@@ -4,7 +4,7 @@ using PolyglotSql.Models;
 
 namespace PolyglotSql
 {
-    internal interface INativePolyglot
+    public interface INativePolyglot
     {
         Token[] Tokenize(string sql, Dialect dialect = Dialect.Generic);
         string[] Transpile(string sql, Dialect fromDialect, Dialect toDialect);

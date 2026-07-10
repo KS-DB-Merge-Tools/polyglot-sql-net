@@ -12,7 +12,7 @@ namespace PolyglotSql
     /// <summary>
     /// Dynamic P/Invoke using LoadLibrary / dlopen
     /// </summary>
-    internal class DynamicRustProvider : INativePolyglot, IDisposable
+    public class DynamicRustProvider : INativePolyglot, IDisposable
     {
         private IntPtr _libHandle;
         private bool _disposed;
