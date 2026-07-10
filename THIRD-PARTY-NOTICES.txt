@@ -1,0 +1,15 @@
+
+Third-Party Software Notices and Licenses
+
+This software redistributes compiled binaries from third-party open-source projects. 
+The original license texts can be found in the /licenses folder of this repository.
+
+1. polyglot (Rust library)
+   License: MIT
+   Repository: https://github.com/tobilg/polyglot
+   Copyright (c) Tobias Müller
+
+2. SQLGlot (Python library core)
+   License: MIT
+   Repository: https://github.com/tobymao/sqlglot
+   Copyright (c) Toby Mao

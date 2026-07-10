@@ -17,13 +17,11 @@ This repository contains a .NET solution with the following projects:
 
 ## Credits & Acknowledgments
 
-This project is a managed .NET wrapper around the excellent [polyglot](https://github.com/tobilg/polyglot) Rust library developed by Tobias Müller. 
+This project is a managed .NET wrapper around the excellent [Polyglot](https://github.com/tobilg/polyglot) Rust library developed by Tobias Müller. 
 
 The core transpilation logic relies on the foundation inspired by the [SQLGlot](https://github.com/tobymao/sqlglot) Python library developed by Toby Mao.
 
-## Licenses
+## License
 
 [MIT](LICENSE)  
-[polyglot MIT](licenses/POLYGLOT_LICENSE)
-[sqlglot MIT](licenses/SQLGLOT_LICENSE)
 

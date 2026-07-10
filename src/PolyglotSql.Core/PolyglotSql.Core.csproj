@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="PolyglotSql.Tests" />
+    <InternalsVisibleTo Include="PolyglotSql.Bundle" />
   </ItemGroup>
 
   <ItemGroup>

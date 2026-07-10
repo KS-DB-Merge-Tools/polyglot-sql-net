@@ -8,5 +8,6 @@
 		<RepositoryUrl>https://github.com/KS-DB-Merge-Tools/polyglot-sql-net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageProjectUrl>https://ksdbmerge.tools</PackageProjectUrl> 
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 </Project>

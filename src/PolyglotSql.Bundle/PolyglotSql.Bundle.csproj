@@ -36,4 +36,9 @@
 
   <!-- for ProjectReference -->
   <!-- Import Project="PolyglotSql.Bundle.targets" /-->
+
+  <ItemGroup>
+    <None Include="..\..\licenses\**" Pack="true" PackagePath="licenses\" />
+	<None Include="..\..\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>
