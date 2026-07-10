@@ -7,7 +7,9 @@
     <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">netstandard2.0;net8.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
     <PackageId>PolyglotSql.Bundle</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 	
 	<!-- For .sln builds from VS, level up from $(SolutionDir) -->
 	<PackageOutputPath Condition="'$(SolutionDir)' != ''">$(SolutionDir)..\LocalPackages\</PackageOutputPath>
@@ -40,5 +42,9 @@
   <ItemGroup>
     <None Include="..\..\licenses\**" Pack="true" PackagePath="licenses\" />
 	<None Include="..\..\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

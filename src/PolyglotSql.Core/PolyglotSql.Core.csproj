@@ -11,6 +11,7 @@
     <AssemblyName>PolyglotSql.Core</AssemblyName>
 
     <PackageId>PolyglotSql.Core</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 	
 	<!-- move up to src level -->
 	<PackageOutputPath Condition="'$(SolutionDir)' != ''">$(SolutionDir)..\LocalPackages\</PackageOutputPath>
@@ -26,4 +27,7 @@
     <PackageReference Include="System.Text.Json" Version="8.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>
