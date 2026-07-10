@@ -38,6 +38,10 @@ string result = Polyglot
 Console.WriteLine(result); // SELECT TOP 10 [id], [name] FROM [person]
 ```
 
+## Native Polyglot Version
+
+The initial release of this library is based on Polyglot v 0.5.1 - its interface was used to specify list of methods for the Core to build native binaries for the Bundle. So it may fail to work with some earlier verions because of missing methods or with some later verisions because of other signature changes.
+
 ## Credits & Acknowledgments
 
 This project is a managed .NET wrapper around the excellent [Polyglot](https://github.com/tobilg/polyglot) Rust library developed by Tobias Müller. 
