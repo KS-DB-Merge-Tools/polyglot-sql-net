@@ -3,7 +3,7 @@ using PolyglotSql;
 using PolyglotSql.Bundle;
 using PolyglotSql.Models;
 
-namespace SqlGlotDotNet.DebugTest;
+namespace PolyglotSql.Tests;
 
 public class TokenizerTests
 {

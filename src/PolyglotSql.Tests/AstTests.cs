@@ -1,7 +1,7 @@
 using PolyglotSql;
 using PolyglotSql.Bundle;
 
-namespace SqlGlotDotNet.DebugTest;
+namespace PolyglotSql.Tests;
 
 public class AstTests
 {
@@ -105,6 +105,49 @@ public class AstTests
             Console.WriteLine($"Parsed {exprs.Length} AST nodes");
 
             Assert.True(exprs.Length >= 2, "Should have at least 2 AST nodes for 2 statements");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
+            throw;
+        }
+    }
+
+    [Fact]
+    public void TestAnnotateTypes()
+    {
+        Console.WriteLine("=== TestAnnotateTypes ===");
+        try
+        {
+            string sql = "SELECT 1 + 1 AS x";
+            var annotated = Polyglot.AnnotateTypes(sql);
+            Console.WriteLine($"Annotated {annotated.Length} node(s)");
+            foreach (var node in annotated)
+                Console.WriteLine(node.ToJsonString().Substring(0, Math.Min(120, node.ToJsonString().Length)) + "...");
+
+            Assert.True(annotated.Length > 0, "Should have at least one AST node");
+            Assert.Contains(annotated, n => n.ToJsonString().Contains("inferred_type"));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
+            throw;
+        }
+    }
+
+    [Fact]
+    public void TestGenerate()
+    {
+        Console.WriteLine("=== TestGenerate ===");
+        try
+        {
+            string sql = "SELECT 1";
+            var ast = Polyglot.Parse(sql);
+            var generated = Polyglot.Generate(ast);
+            Console.WriteLine($"Generated {generated.Length} statement(s): {string.Join(" ; ", generated)}");
+
+            Assert.True(generated.Length == 1, "Should generate exactly one statement");
+            Assert.Contains("SELECT", generated[0]);
         }
         catch (Exception ex)
         {

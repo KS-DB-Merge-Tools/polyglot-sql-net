@@ -30,11 +30,14 @@ namespace PolyglotSql
         string[] Generate(Expression[] ast, Dialect dialect = Dialect.Generic);
         QueryAnalysis AnalyzeQuery(string sql, AnalyzeQueryOptions options = null);
         ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic);
+        string[] DialectList();
+        int DialectCount();
+        string Version();
     }
 
     public static class Polyglot
     {
-        private static INativePolyglot? _provider;
+        internal static INativePolyglot? _provider; // internal to test dialect list
         private static readonly object _lock = new object();
 
         public static void RegisterProvider(INativePolyglot provider)

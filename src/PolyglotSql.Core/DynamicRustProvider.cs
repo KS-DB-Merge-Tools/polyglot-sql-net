@@ -103,6 +103,15 @@ namespace PolyglotSql
         private delegate PolyglotValidationResult PolyglotValidateDelegate(IntPtr sql, IntPtr dialect);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr PolyglotDialectListDelegate();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int PolyglotDialectCountDelegate();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr PolyglotVersionDelegate();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void PolyglotFreeStringDelegate(IntPtr s);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -134,6 +143,9 @@ namespace PolyglotSql
         private PolyglotGenerateDelegate _generate;
         private PolyglotAnalyzeQueryDelegate _analyzeQuery;
         private PolyglotValidateDelegate _validate;
+        private PolyglotDialectListDelegate _dialectList;
+        private PolyglotDialectCountDelegate _dialectCount;
+        private PolyglotVersionDelegate _version;
         private PolyglotFreeStringDelegate _freeString;
         private PolyglotFreeResultDelegate _freeResult;
         private PolyglotFreeValidationResultDelegate _freeValidationResult;
@@ -165,6 +177,9 @@ namespace PolyglotSql
             _generate = LoadDelegate<PolyglotGenerateDelegate>("polyglot_generate");
             _analyzeQuery = LoadDelegate<PolyglotAnalyzeQueryDelegate>("polyglot_analyze_query");
             _validate = LoadDelegate<PolyglotValidateDelegate>("polyglot_validate");
+            _dialectList = LoadDelegate<PolyglotDialectListDelegate>("polyglot_dialect_list");
+            _dialectCount = LoadDelegate<PolyglotDialectCountDelegate>("polyglot_dialect_count");
+            _version = LoadDelegate<PolyglotVersionDelegate>("polyglot_version");
             _freeString = LoadDelegate<PolyglotFreeStringDelegate>("polyglot_free_string");
             _freeResult = LoadDelegate<PolyglotFreeResultDelegate>("polyglot_free_result");
             _freeValidationResult = LoadDelegate<PolyglotFreeValidationResultDelegate>("polyglot_free_validation_result");
@@ -299,6 +314,34 @@ namespace PolyglotSql
         public ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic)
         {
             return CallNativeValidate(_validate, sql, dialect.ToString().ToLowerInvariant());
+        }
+
+        public string[] DialectList()
+        {
+            IntPtr ptr = _dialectList();
+            if (ptr == IntPtr.Zero)
+                return Array.Empty<string>();
+
+            try
+            {
+                string json = Marshal.PtrToStringAnsi(ptr) ?? "[]";
+                return JsonSerializer.Deserialize<string[]>(json) ?? Array.Empty<string>();
+            }
+            finally
+            {
+                _freeString(ptr);
+            }
+        }
+
+        public int DialectCount()
+        {
+            return _dialectCount();
+        }
+
+        public string Version()
+        {
+            IntPtr ptr = _version();
+            return ptr == IntPtr.Zero ? string.Empty : Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
         }
 
         private Token[] CallNativeTokenize(PolyglotTokenizeDelegate del, string sql, string dialect)

@@ -3,7 +3,7 @@ using PolyglotSql.Bundle;
 using PolyglotSql.Models;
 using Xunit;
 
-namespace SqlGlotDotNet.DebugTest;
+namespace PolyglotSql.Tests;
 
 public class FormatTests
 {

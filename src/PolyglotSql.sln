@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql.Core", "Polyglo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql.Bundle", "PolyglotSql.Bundle\PolyglotSql.Bundle.csproj", "{D68849B0-E904-4E9B-900E-30280935D062}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql.DebugTest", "PolyglotSql.DebugTest\PolyglotSql.DebugTest.csproj", "{948FA328-4740-4C7D-A789-A28FBB5E4CE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolyglotSql.Tests", "PolyglotSql.Tests\PolyglotSql.Tests.csproj", "{948FA328-4740-4C7D-A789-A28FBB5E4CE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

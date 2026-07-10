@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <RootNamespace>PolyglotSql.Tests</RootNamespace>
+    <AssemblyName>PolyglotSql.Tests</AssemblyName>
 	
 	<!-- don't use combined because we need to have concrete rid on Windows for VS test exporer -->
     <!--RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers-->
