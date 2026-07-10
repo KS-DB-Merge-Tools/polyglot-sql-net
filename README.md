@@ -2,18 +2,41 @@
 
 A .NET FFI wrapper for the Polyglot, a Rust SQL transpiler. Enables high-performance parsing, formatting, AST generation, and translation between more than 30 SQL dialects.
 
-## Projects
+## How to Use
 
-This repository contains a .NET solution with the following projects:
+There are two options: **PolyglotSql.Core** to use with your own Polyglot native library, or **PolyglotSql.Bundle** to use it out-of-the-box. Packages with the same names are available on the [nuget](https://www.nuget.org/profiles/ksdbmergetools).
 
-- **PolyglotSql.Core** (`netstandard2.0`) — the core wrapper library that calls into the polyglot Rust engine via C FFI. AOT-compatible.
-- **PolyglotSql.Bundle** (`netstandard2.0`) — PolyglotSql.Core plus the prebuilt Rust native libraries, so the package works out of the box on Windows and Linux.
-- **PolyglotSql.Tests** (`.NET 8` + xUnit) — unit tests for the wrapper.
+### PolyglotSql.Core
 
-## Requirements
+Take native Polyglot library (for example from Polyglot reseases) and use the following code for initialization:
 
-- .NET 8 SDK (for building and testing)
-- A prebuilt `libpolyglot_sql_ffi` native library (bundled automatically via PolyglotSql.Bundle, or supplied by your own Rust build)
+```
+var provider = new DynamicRustProvider(libPath);
+Polyglot.RegisterProvider(provider);
+```
+
+### PolyglotSql.Bundle
+
+This project/package includes native polyglot binaries for win-x64, win-x86, and linux-x64 target runtimes. Use the following call for  initialization:
+
+```
+BundleInitializer.Initialize();
+```
+
+Please note that packaged native binary works only if your project has <RuntimeIdentifier> matching to one of supported runtimes or if you're using it in the .NET framework project. In other cases please consider using the **PolyglotSql.Core** package which provides more flexibility.
+
+### Usage Example
+
+```
+string result = Polyglot
+	.Transpile(
+		"SELECT `id`, `name` FROM `person` LIMIT 10;",
+		Dialect.MySQL,
+		Dialect.TSQL)
+	.FirstOrDefault();
+
+Console.WriteLine(result); // SELECT TOP 10 [id], [name] FROM [person]
+```
 
 ## Credits & Acknowledgments
 
