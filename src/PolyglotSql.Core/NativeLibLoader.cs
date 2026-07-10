@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace PolyglotSql
 {
-    public static class NativeLibLoader
+    internal static class NativeLibLoader
     {
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern IntPtr LoadLibrary(string lpFileName);

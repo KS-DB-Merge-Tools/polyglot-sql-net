@@ -19,26 +19,6 @@ namespace PolyglotSql.Models
         }
     }
 
-    [JsonConverter(typeof(JsonStringEnumConverter<OpenLineageRunEventType>))]
-    public enum OpenLineageRunEventType
-    {
-        START,
-        RUNNING,
-        COMPLETE,
-        ABORT,
-        FAIL,
-        OTHER
-    }
-
-    public record OpenLineageDatasetId
-    {
-        [JsonPropertyName("namespace")]
-        public string Namespace { get; set; }
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-    }
-
     public record OpenLineageOptions
     {
         [JsonPropertyName("dialect")]

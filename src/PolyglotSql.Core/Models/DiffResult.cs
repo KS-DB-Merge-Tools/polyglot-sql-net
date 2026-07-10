@@ -1,38 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
 {
-    public enum DiffEditType
-    {
-        unknown,
-        insert,
-        remove,
-        move,
-        update,
-        keep
-    }
-
-    public record DiffEdit
-    {
-        [JsonPropertyName("type")]
-        public DiffEditType Type { get; set; } = DiffEditType.unknown;
-
-        [JsonPropertyName("expression")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Expression Expression { get; set; }
-
-        [JsonPropertyName("source")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Expression Source { get; set; }
-
-        [JsonPropertyName("target")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Expression Target { get; set; }
-    }
-
     public record DiffResult
     {
         public List<DiffEdit> Edits { get; set; } = new List<DiffEdit>();

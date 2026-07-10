@@ -1,25 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
 {
-    [JsonConverter(typeof(JsonStringEnumConverter<SourceKind>))]
-    public enum SourceKind
-    {
-        unknown,
-        root,
-        cte,
-        derived_table,
-        subquery,
-        table,
-        @virtual,
-        view,
-        lateral,
-        unnest
-    }
-
     public record LineageNode
     {
         public string Name { get; set; } = string.Empty;

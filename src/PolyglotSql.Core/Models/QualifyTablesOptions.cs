@@ -36,15 +36,4 @@ namespace PolyglotSql.Models
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? NormalizeSetOperationSubqueries { get; set; }
     }
-
-    public record RenameTablesOptions
-    {
-        [JsonPropertyName("aliasRenamedTables")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public bool? AliasRenamedTables { get; set; }
-
-        [JsonPropertyName("preserveExistingAliases")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public bool? PreserveExistingAliases { get; set; }
-    }
 }

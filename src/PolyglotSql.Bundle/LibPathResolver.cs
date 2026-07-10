@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace PolyglotSql.Bundle
 {
-    public static class LibPathResolver
+    internal static class LibPathResolver
     {
         public static string GetCurrentDllPath()
         {
