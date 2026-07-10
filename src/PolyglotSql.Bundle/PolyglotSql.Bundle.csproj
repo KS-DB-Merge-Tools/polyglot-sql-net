@@ -7,7 +7,6 @@
     <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">netstandard2.0;net8.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0-local</Version>
     <PackageId>PolyglotSql.Bundle</PackageId>
 	
 	<!-- For .sln builds from VS, level up from $(SolutionDir) -->

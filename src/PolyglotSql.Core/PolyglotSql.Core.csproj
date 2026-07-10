@@ -10,9 +10,9 @@
     <RootNamespace>PolyglotSql</RootNamespace>
     <AssemblyName>PolyglotSql</AssemblyName>
 
-    <Version>0.1.0-local</Version>
     <PackageId>PolyglotSql.Core</PackageId>
-	<!-- Путь вывода пакета (поднимаемся на уровень выше src) -->
+	
+	<!-- move up to src level -->
 	<PackageOutputPath Condition="'$(SolutionDir)' != ''">$(SolutionDir)..\LocalPackages\</PackageOutputPath>
 	<PackageOutputPath Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\LocalPackages\</PackageOutputPath>
   </PropertyGroup>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 using PolyglotSql.Models;
 
@@ -134,6 +135,24 @@ namespace PolyglotSql
 
         public static ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic)
             => Provider.Validate(sql, dialect);
+
+        public static VersionInfo VersionInfo
+        {
+            get
+            {
+                var assembly = typeof(Polyglot).Assembly;
+                string wrapperVersion =
+                    assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                    ?? assembly.GetName().Version?.ToString()
+                    ?? "0.0.0";
+
+                return new VersionInfo
+                {
+                    NativeRuntimeVersion = Provider.Version(),
+                    WrapperVersion = wrapperVersion,
+                };
+            }
+        }
 
         public static string TranspileDataType(string sql, Dialect fromDialect, Dialect toDialect)
         {

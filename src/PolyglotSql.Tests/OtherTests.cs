@@ -72,4 +72,25 @@ public class OtherTests
             throw;
         }
     }
+
+    [Fact]
+    public void TestVersionInfo()
+    {
+        Console.WriteLine("=== TestVersionInfo ===");
+        try
+        {
+            var versionInfo = Polyglot.VersionInfo;
+            Console.WriteLine($"NativeRuntimeVersion: {versionInfo.NativeRuntimeVersion}");
+            Console.WriteLine($"WrapperVersion: {versionInfo.WrapperVersion}");
+            Console.WriteLine($"NativeExpectedVersion: {versionInfo.NativeExpectedVersion}");
+
+            Assert.False(string.IsNullOrEmpty(versionInfo.NativeRuntimeVersion));
+            Assert.StartsWith("0.1.0", versionInfo.WrapperVersion);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
+            throw;
+        }
+    }
 }
