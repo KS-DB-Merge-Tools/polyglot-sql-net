@@ -8,7 +8,7 @@ namespace PolyglotSql
 {
     public static class Polyglot
     {
-        internal static INativePolyglot? _provider; // internal to test dialect list
+        internal static INativePolyglot _provider; // internal to test dialect list
         private static readonly object _lock = new object();
 
         internal static void RegisterProvider(INativePolyglot provider)
