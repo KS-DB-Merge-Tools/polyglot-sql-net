@@ -8,7 +8,7 @@
     <LangVersion>9.0</LangVersion>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>PolyglotSql</RootNamespace>
-    <AssemblyName>PolyglotSql</AssemblyName>
+    <AssemblyName>PolyglotSql.Core</AssemblyName>
 
     <PackageId>PolyglotSql.Core</PackageId>
 	
