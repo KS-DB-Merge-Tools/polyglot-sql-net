@@ -34,6 +34,16 @@ namespace PolyglotSql
     [JsonSerializable(typeof(OpenLineageWarning))]
     [JsonSerializable(typeof(OpenLineageEventResult))]
     [JsonSerializable(typeof(Expression))]
+    [JsonSerializable(typeof(AnalyzeQueryOptions))]
+    [JsonSerializable(typeof(QueryAnalysis))]
+    [JsonSerializable(typeof(ProjectionFact))]
+    [JsonSerializable(typeof(ColumnReferenceFact))]
+    [JsonSerializable(typeof(RelationFact))]
+    [JsonSerializable(typeof(SetOperationFact))]
+    [JsonSerializable(typeof(SetOperationBranchFact))]
+    [JsonSerializable(typeof(ValidationResult))]
+    [JsonSerializable(typeof(ValidationError))]
+    [JsonSerializable(typeof(ValidationError[]))]
     public partial class PolyglotJsonContext : JsonSerializerContext
     {
     }

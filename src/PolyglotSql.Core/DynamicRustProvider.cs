@@ -25,6 +25,17 @@ namespace PolyglotSql
             public int Status;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct PolyglotValidationResult
+        {
+            public int Valid;
+            public IntPtr ErrorsJson;
+            public IntPtr Error;
+            public int Status;
+        }
+
+        private const int STATUS_VALIDATION_ERROR = 4;
+
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate PolyglotResult PolyglotTokenizeDelegate(IntPtr sql, IntPtr dialect);
 
@@ -80,10 +91,25 @@ namespace PolyglotSql
         private delegate PolyglotResult PolyglotOpenLineageRunEventDelegate(IntPtr sql, IntPtr optionsJson);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotAnnotateTypesDelegate(IntPtr sql, IntPtr dialect, IntPtr schemaJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotGenerateDelegate(IntPtr astJson, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotAnalyzeQueryDelegate(IntPtr sql, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotValidationResult PolyglotValidateDelegate(IntPtr sql, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void PolyglotFreeStringDelegate(IntPtr s);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void PolyglotFreeResultDelegate(PolyglotResult result);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void PolyglotFreeValidationResultDelegate(PolyglotValidationResult result);
 
         private PolyglotTokenizeDelegate _tokenize;
         private PolyglotTranspileDelegate _transpile;
@@ -104,8 +130,13 @@ namespace PolyglotSql
         private PolyglotOpenLineageColumnLineageDelegate _openLineageColumnLineage;
         private PolyglotOpenLineageJobEventDelegate _openLineageJobEvent;
         private PolyglotOpenLineageRunEventDelegate _openLineageRunEvent;
+        private PolyglotAnnotateTypesDelegate _annotateTypes;
+        private PolyglotGenerateDelegate _generate;
+        private PolyglotAnalyzeQueryDelegate _analyzeQuery;
+        private PolyglotValidateDelegate _validate;
         private PolyglotFreeStringDelegate _freeString;
         private PolyglotFreeResultDelegate _freeResult;
+        private PolyglotFreeValidationResultDelegate _freeValidationResult;
 
         public DynamicRustProvider(string libPath)
         {
@@ -130,8 +161,13 @@ namespace PolyglotSql
             _openLineageColumnLineage = LoadDelegate<PolyglotOpenLineageColumnLineageDelegate>("polyglot_openlineage_column_lineage");
             _openLineageJobEvent = LoadDelegate<PolyglotOpenLineageJobEventDelegate>("polyglot_openlineage_job_event");
             _openLineageRunEvent = LoadDelegate<PolyglotOpenLineageRunEventDelegate>("polyglot_openlineage_run_event");
+            _annotateTypes = LoadDelegate<PolyglotAnnotateTypesDelegate>("polyglot_annotate_types");
+            _generate = LoadDelegate<PolyglotGenerateDelegate>("polyglot_generate");
+            _analyzeQuery = LoadDelegate<PolyglotAnalyzeQueryDelegate>("polyglot_analyze_query");
+            _validate = LoadDelegate<PolyglotValidateDelegate>("polyglot_validate");
             _freeString = LoadDelegate<PolyglotFreeStringDelegate>("polyglot_free_string");
             _freeResult = LoadDelegate<PolyglotFreeResultDelegate>("polyglot_free_result");
+            _freeValidationResult = LoadDelegate<PolyglotFreeValidationResultDelegate>("polyglot_free_validation_result");
         }
 
         private T LoadDelegate<T>(string name) where T : Delegate
@@ -238,6 +274,31 @@ namespace PolyglotSql
         {
             string optionsJson = JsonSerializer.Serialize(options ?? new OpenLineageOptions(), PolyglotJsonContext.Default.OpenLineageOptions);
             return CallNativeOpenLineage(_openLineageRunEvent, sql, optionsJson, PolyglotJsonContext.Default.OpenLineageEventResult);
+        }
+
+        public Expression[] AnnotateTypes(string sql, Dialect dialect = Dialect.Generic, ValidationSchema schema = null)
+        {
+            string schemaJson = schema == null
+                ? string.Empty
+                : JsonSerializer.Serialize(schema, PolyglotJsonContext.Default.ValidationSchema);
+            return CallNativeAnnotateTypes(_annotateTypes, sql, dialect.ToString().ToLowerInvariant(), schemaJson);
+        }
+
+        public string[] Generate(Expression[] ast, Dialect dialect = Dialect.Generic)
+        {
+            string astJson = JsonSerializer.Serialize(ast);
+            return CallNativeGenerate(_generate, astJson, dialect.ToString().ToLowerInvariant());
+        }
+
+        public QueryAnalysis AnalyzeQuery(string sql, AnalyzeQueryOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new AnalyzeQueryOptions(), PolyglotJsonContext.Default.AnalyzeQueryOptions);
+            return CallNativeAnalyzeQuery(_analyzeQuery, sql, optionsJson, PolyglotJsonContext.Default.QueryAnalysis);
+        }
+
+        public ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic)
+        {
+            return CallNativeValidate(_validate, sql, dialect.ToString().ToLowerInvariant());
         }
 
         private Token[] CallNativeTokenize(PolyglotTokenizeDelegate del, string sql, string dialect)
@@ -592,6 +653,108 @@ namespace PolyglotSql
             catch (JsonException ex)
             {
                 throw new PolyglotException(-1, $"Failed to deserialize OpenLineage result: {ex.Message}");
+            }
+        }
+
+        private Expression[] CallNativeAnnotateTypes(PolyglotAnnotateTypesDelegate del, string sql, string dialect, string schemaJson)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            IntPtr schemaPtr = Marshal.StringToHGlobalAnsi(schemaJson);
+            try
+            {
+                var result = del(sqlPtr, dialectPtr, schemaPtr);
+                return HandleResultExpressionArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+                Marshal.FreeHGlobal(schemaPtr);
+            }
+        }
+
+        private string[] CallNativeGenerate(PolyglotGenerateDelegate del, string astJson, string dialect)
+        {
+            IntPtr astPtr = Marshal.StringToHGlobalAnsi(astJson);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(astPtr, dialectPtr);
+                return HandleResultArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(astPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private QueryAnalysis CallNativeAnalyzeQuery(PolyglotAnalyzeQueryDelegate del, string sql, string optionsJson, JsonTypeInfo<QueryAnalysis> typeInfo)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(optionsJson);
+            try
+            {
+                var result = del(sqlPtr, optPtr);
+                return HandleResultOpenLineage(result, typeInfo);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private ValidationResult CallNativeValidate(PolyglotValidateDelegate del, string sql, string dialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(sqlPtr, dialectPtr);
+                return HandleResultValidation(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private ValidationResult HandleResultValidation(PolyglotValidationResult result)
+        {
+            // status 0 = valid, status 4 (STATUS_VALIDATION_ERROR) = invalid but parsed.
+            // Both are normal validation outcomes carrying the errors in `errors_json`.
+            // Any other status indicates a hard error (unknown dialect, panic, ...).
+            if (result.Status != 0 && result.Status != STATUS_VALIDATION_ERROR)
+            {
+                string error = result.Error != IntPtr.Zero
+                    ? Marshal.PtrToStringAnsi(result.Error) ?? "Unknown error"
+                    : "Unknown error";
+
+                _freeValidationResult(result);
+
+                throw new PolyglotException(result.Status, $"Polyglot error (status {result.Status}): {error}");
+            }
+
+            string errorsJson = result.ErrorsJson != IntPtr.Zero
+                ? Marshal.PtrToStringAnsi(result.ErrorsJson) ?? "[]"
+                : "[]";
+
+            bool valid = result.Valid != 0;
+
+            _freeValidationResult(result);
+
+            try
+            {
+                var errors = JsonSerializer.Deserialize(errorsJson, PolyglotJsonContext.Default.ValidationErrorArray)
+                    ?? Array.Empty<ValidationError>();
+                return new ValidationResult { Valid = valid, Errors = errors };
+            }
+            catch (JsonException ex)
+            {
+                throw new PolyglotException(-1, $"Failed to deserialize validation result: {ex.Message}");
             }
         }
 

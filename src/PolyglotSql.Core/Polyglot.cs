@@ -26,6 +26,10 @@ namespace PolyglotSql
         OpenLineageColumnLineageResult OpenLineageColumnLineage(string sql, OpenLineageOptions options = null);
         OpenLineageEventResult OpenLineageJobEvent(string sql, OpenLineageOptions options = null);
         OpenLineageEventResult OpenLineageRunEvent(string sql, OpenLineageOptions options = null);
+        Expression[] AnnotateTypes(string sql, Dialect dialect = Dialect.Generic, ValidationSchema schema = null);
+        string[] Generate(Expression[] ast, Dialect dialect = Dialect.Generic);
+        QueryAnalysis AnalyzeQuery(string sql, AnalyzeQueryOptions options = null);
+        ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic);
     }
 
     public static class Polyglot
@@ -115,6 +119,18 @@ namespace PolyglotSql
 
         public static OpenLineageEventResult OpenLineageRunEvent(string sql, OpenLineageOptions options = null)
             => Provider.OpenLineageRunEvent(sql, options);
+
+        public static Expression[] AnnotateTypes(string sql, Dialect dialect = Dialect.Generic, ValidationSchema schema = null)
+            => Provider.AnnotateTypes(sql, dialect, schema);
+
+        public static string[] Generate(Expression[] ast, Dialect dialect = Dialect.Generic)
+            => Provider.Generate(ast, dialect);
+
+        public static QueryAnalysis AnalyzeQuery(string sql, AnalyzeQueryOptions options = null)
+            => Provider.AnalyzeQuery(sql, options);
+
+        public static ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic)
+            => Provider.Validate(sql, dialect);
 
         public static string TranspileDataType(string sql, Dialect fromDialect, Dialect toDialect)
         {
