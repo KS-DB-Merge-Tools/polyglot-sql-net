@@ -45,7 +45,7 @@ jobs:
     - name: Build Linux binary (.so)
       run: |
         cd ./polyglot-src
-        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=true" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-unknown-linux-gnu
+        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=symbols" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-unknown-linux-gnu
         
     # Windows .dll
     - name: Build Windows binary
@@ -53,10 +53,10 @@ jobs:
         cd ./polyglot-src
         rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
         rm -f ${{ env.CARGO_TARGET_DIR }}/x86_64-pc-windows-gnu/.package-lock.json
-        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=true" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-pc-windows-gnu
+        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=symbols" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-pc-windows-gnu
         rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
         rm -f ${{ env.CARGO_TARGET_DIR }}/i686-pc-windows-gnu/.package-lock.json
-        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=true" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target i686-pc-windows-gnu
+        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=symbols" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target i686-pc-windows-gnu
 
     - name: Copy binaries to .NET Asset folders
       run: |
