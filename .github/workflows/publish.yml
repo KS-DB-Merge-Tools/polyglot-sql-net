@@ -1,0 +1,85 @@
+name: Build Rust and Publish .NET
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # for manual run from GitHub
+
+jobs:
+  build-native:
+    runs-on: ubuntu-latest
+
+    # to speed up build in docker on windows, otherwise inefficient i/o between docker and host
+    env:
+      CARGO_TARGET_DIR: /tmp/rust-target
+      CARGO_HOME: /tmp/cargo-home
+
+    steps:
+    - name: Checkout wrapper repository
+      uses: actions/checkout@v4
+
+    - name: Read target Rust version
+      id: get-version
+      run: |
+        RUST_TAG=$(cat polyglot-version.txt | xargs)
+        echo "POLYGLOT_TAG=$RUST_TAG" >> $GITHUB_ENV
+        echo "Downloading tag: $RUST_TAG"
+
+    - name: Clone Polyglot Rust repo
+      run: |
+        rm -rf ./polyglot-src
+        git clone --branch ${{ env.POLYGLOT_TAG }} --depth 1 https://github.com/tobilg/polyglot.git ./polyglot-src
+
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: x86_64-unknown-linux-gnu, x86_64-pc-windows-gnu, i686-pc-windows-gnu
+
+    - name: Install MinGW for Windows cross-compilation
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64
+
+    # Linux .so
+    - name: Build Linux binary (.so)
+      run: |
+        cd ./polyglot-src
+        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target x86_64-unknown-linux-gnu
+        
+    # Windows .dll
+    - name: Build Windows binary
+      run: |
+        cd ./polyglot-src
+        rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
+        rm -f ${{ env.CARGO_TARGET_DIR }}/x86_64-pc-windows-gnu/.package-lock.json
+        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target x86_64-pc-windows-gnu
+        rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
+        rm -f ${{ env.CARGO_TARGET_DIR }}/i686-pc-windows-gnu/.package-lock.json
+        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target i686-pc-windows-gnu
+
+    - name: Copy binaries to .NET Asset folders
+      run: |
+        cp -f ${{ env.CARGO_TARGET_DIR }}/x86_64-pc-windows-gnu/ffi_release/polyglot_sql_ffi.dll ./src/PolyglotSql.Bundle/runtimes/win-x64/
+        cp -f ${{ env.CARGO_TARGET_DIR }}/i686-pc-windows-gnu/ffi_release/polyglot_sql_ffi.dll ./src/PolyglotSql.Bundle/runtimes/win-x86/
+        cp -f ${{ env.CARGO_TARGET_DIR }}/x86_64-unknown-linux-gnu/ffi_release/libpolyglot_sql_ffi.so ./src/PolyglotSql.Bundle/runtimes/linux-x64/
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Pack NuGet Packages
+      run: |
+        cd ./src
+        dotnet pack -c Release -o ./artifacts
+
+    - name: Publish to NuGet.org
+      if: github.event_name == 'release' && !env.ACT
+      run: |
+        dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://nuget.org
+        
+    - name: Upload compiled packages to GitHub Interface
+      uses: actions/upload-artifact@v4
+      with:
+        name: compiled-nuget-packages
+        path: ./artifacts/*.nupkg
