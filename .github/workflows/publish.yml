@@ -82,10 +82,10 @@ jobs:
     - name: Publish to NuGet.org
       if: github.event_name == 'release' && !env.ACT
       run: |
-        dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://nuget.org
+        dotnet nuget push ./src/artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://nuget.org
         
     - name: Upload compiled packages to GitHub Interface
       uses: actions/upload-artifact@v4
       with:
         name: compiled-nuget-packages
-        path: ./artifacts/*.nupkg
+        path: ./src/artifacts/*.nupkg

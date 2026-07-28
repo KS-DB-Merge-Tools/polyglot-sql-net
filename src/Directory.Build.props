@@ -1,6 +1,6 @@
 <Project>
 	<PropertyGroup>
-		<Version>0.1.0</Version>
+		<Version>0.1.1</Version>
 		<Authors>Konstantin Semenenkov</Authors>
 		<Company>KS DB Merge Tools</Company>
 		<Copyright>Copyright © Konstantin Semenenkov (KS DB Merge Tools) 2026</Copyright> 
