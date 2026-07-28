@@ -13,6 +13,7 @@ jobs:
     env:
       CARGO_TARGET_DIR: /tmp/rust-target
       CARGO_HOME: /tmp/cargo-home
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 1
 
     steps:
     - name: Checkout wrapper repository
@@ -44,7 +45,7 @@ jobs:
     - name: Build Linux binary (.so)
       run: |
         cd ./polyglot-src
-        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target x86_64-unknown-linux-gnu
+        cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-unknown-linux-gnu
         
     # Windows .dll
     - name: Build Windows binary
@@ -52,10 +53,10 @@ jobs:
         cd ./polyglot-src
         rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
         rm -f ${{ env.CARGO_TARGET_DIR }}/x86_64-pc-windows-gnu/.package-lock.json
-        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target x86_64-pc-windows-gnu
+        cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-pc-windows-gnu
         rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
         rm -f ${{ env.CARGO_TARGET_DIR }}/i686-pc-windows-gnu/.package-lock.json
-        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target i686-pc-windows-gnu
+        cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target i686-pc-windows-gnu
 
     - name: Copy binaries to .NET Asset folders
       run: |
@@ -67,6 +68,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
+
+    - name: Build .NET Solution
+      run: |
+        cd ./src
+        dotnet build -c Release
 
     - name: Pack NuGet Packages
       run: |
