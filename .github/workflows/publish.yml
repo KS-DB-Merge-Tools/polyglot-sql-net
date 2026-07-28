@@ -89,3 +89,17 @@ jobs:
       with:
         name: compiled-nuget-packages
         path: ./src/artifacts/*.nupkg
+
+    - name: Run Integration Tests using Compiled NuGet Package
+      run: |
+        dotnet test ./src/PolyglotSql.Tests/PolyglotSql.Tests.csproj -c Release \
+          --logger "trx;LogFileName=test-results.trx" \
+          /p:UsePackage=true \
+          /p:RestoreAdditionalProjectSources=$(pwd)/src/artifacts
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always() # even if tests fail
+      with:
+        name: dotnet-test-results
+        path: ./src/PolyglotSql.Tests/TestResults/test-results.trx

@@ -20,7 +20,7 @@
 
   <!-- In Bundle these binaries are included in package and not copied with ProjectReference
 	   so we include them explicitely here, linux and win64 are enough -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(UsePackage)' != 'true'">
     <None Include="..\PolyglotSql.Bundle\runtimes\linux-x64\native\libpolyglot_sql_ffi.so" Link="libpolyglot_sql_ffi.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -42,8 +42,11 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(UsePackage)' != 'true'">
     <ProjectReference Include="..\PolyglotSql.Bundle\PolyglotSql.Bundle.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(UsePackage)' == 'true'">
+    <PackageReference Include="PolyglotSql.Bundle" Version="*" />
+  </ItemGroup>
 </Project>
