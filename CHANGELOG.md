@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
  
 ### Added
 
+### Changed
+ 
+### Fixed
+
+
+## [0.2.0] - 2026-07-29
+ 
+### Added
+
 - Expression.TransformAll(Action<JsonNode> transform) to simplify expression update
 
 - Polyglot.GenerateOne() - similar to Expression.ParseOne()
@@ -23,7 +32,7 @@ All notable changes to this project will be documented in this file.
 - Use Linux system calls from libdl.so.2 with fallback to libdl (previously it was libdl only)
 
  
-## [0.1.0] - 2027-07-10
+## [0.1.0] - 2026-07-10
  
 ### Added
 
