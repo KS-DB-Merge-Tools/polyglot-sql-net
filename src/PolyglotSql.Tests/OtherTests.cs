@@ -85,7 +85,7 @@ public class OtherTests
             Console.WriteLine($"NativeExpectedVersion: {versionInfo.NativeExpectedVersion}");
 
             Assert.False(string.IsNullOrEmpty(versionInfo.NativeRuntimeVersion));
-            Assert.StartsWith("0.1.0", versionInfo.WrapperVersion);
+            Assert.StartsWith("0.1.1", versionInfo.WrapperVersion);
         }
         catch (Exception ex)
         {
