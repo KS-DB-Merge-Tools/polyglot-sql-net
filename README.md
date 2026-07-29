@@ -10,7 +10,7 @@ There are two options: **PolyglotSql.Core** to use with your own Polyglot native
 
 Take native Polyglot library (for example from Polyglot reseases) and use the following code for initialization:
 
-```
+```cs
 var provider = new DynamicRustProvider(libPath);
 Polyglot.RegisterProvider(provider);
 ```
@@ -19,7 +19,7 @@ Polyglot.RegisterProvider(provider);
 
 This project/package includes native polyglot binaries for win-x64, win-x86, and linux-x64 target runtimes. Use the following call for  initialization:
 
-```
+```cs
 BundleInitializer.Initialize();
 ```
 
@@ -27,7 +27,7 @@ Please note that packaged native binary works only if your project has <RuntimeI
 
 ### Usage Example
 
-```
+```cs
 string result = Polyglot
 	.Transpile(
 		"SELECT `id`, `name` FROM `person` LIMIT 10;",
@@ -40,7 +40,7 @@ Console.WriteLine(result); // SELECT TOP 10 [id], [name] FROM [person]
 
 ## Native Polyglot Version
 
-The initial release of this library is based on Polyglot v 0.5.1 - its interface was used to specify list of methods for the Core to build native binaries for the Bundle. So it may fail to work with some earlier verions because of missing methods or with some later verisions because of other signature changes.
+The current version of this library is based on the Polyglot version from file [polyglot-version.txt](polyglot-version.txt). The Bundle package includes binaries built from that version. If you use the Core package with some other version, it may fail to work with some other verions because of missing methods or other signature changes.
 
 ## Credits & Acknowledgments
 
