@@ -79,18 +79,6 @@ jobs:
         cd ./src
         dotnet pack -c Release -o ./artifacts
 
-    - name: NuGet login (OIDC → temp API key)
-      if: github.event_name == 'release' && !env.ACT
-      uses: NuGet/login@v1
-      id: login
-      with:
-        user: ksdbmergetools
-
-    - name: Publish to NuGet.org
-      if: github.event_name == 'release' && !env.ACT
-      run: |
-        dotnet nuget push ./src/artifacts/*.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
-        
     - name: Upload compiled packages to GitHub Interface
       uses: actions/upload-artifact@v4
       with:
@@ -110,3 +98,16 @@ jobs:
       with:
         name: dotnet-test-results
         path: ./src/PolyglotSql.Tests/TestResults/test-results.trx
+
+    - name: NuGet login (OIDC → temp API key)
+      if: github.event_name == 'release' && !env.ACT
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ksdbmergetools
+
+    - name: Publish to NuGet.org
+      if: github.event_name == 'release' && !env.ACT
+      run: |
+        dotnet nuget push ./src/artifacts/*.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+        
