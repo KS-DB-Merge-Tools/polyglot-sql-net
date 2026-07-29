@@ -6,7 +6,7 @@ Polyglot SQL .NET is a managed .NET wrapper around the [Polyglot](https://github
  
 This package is just a .NET layer only, it does not include native polyglot binaries. You'll need to get one (for example from polyglot releases) and make a provider registration call:
 
-```
+```cs
 var provider = new DynamicRustProvider(libPath);
 Polyglot.RegisterProvider(provider);
 ```

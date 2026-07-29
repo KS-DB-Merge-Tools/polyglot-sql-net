@@ -163,7 +163,7 @@ public class TranspileTests
         var opts = new TranspileOptions { UnsupportedLevel = UnsupportedLevel.raise, MaxUnsupported = maxUnsupported };
         string sql = "SELECT JSONB_BUILD_OBJECT('a', 1), TO_TSVECTOR('b') FROM t LATERAL JOIN u ON t.id = u.id";
         var ex = Assert.Throws<PolyglotException>(() =>
-            Polyglot.TranspileWithOptions(sql, Dialect.PostgreSQL, Dialect.TSQL, opts));
+            Polyglot.TranspileWithOptions(sql, Dialect.PostgreSQL, Dialect.SQLite, opts));
         bool truncated = ex.Message.Contains("more");
         Assert.Equal(expectTruncated, truncated);
     }

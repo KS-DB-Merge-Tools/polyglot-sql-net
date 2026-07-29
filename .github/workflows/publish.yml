@@ -13,6 +13,7 @@ jobs:
     env:
       CARGO_TARGET_DIR: /tmp/rust-target
       CARGO_HOME: /tmp/cargo-home
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 1
 
     steps:
     - name: Checkout wrapper repository
@@ -44,7 +45,7 @@ jobs:
     - name: Build Linux binary (.so)
       run: |
         cd ./polyglot-src
-        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target x86_64-unknown-linux-gnu
+        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=symbols" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-unknown-linux-gnu
         
     # Windows .dll
     - name: Build Windows binary
@@ -52,34 +53,61 @@ jobs:
         cd ./polyglot-src
         rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
         rm -f ${{ env.CARGO_TARGET_DIR }}/x86_64-pc-windows-gnu/.package-lock.json
-        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target x86_64-pc-windows-gnu
+        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=symbols" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target x86_64-pc-windows-gnu
         rm -f ${{ env.CARGO_TARGET_DIR }}/.package-lock.json
         rm -f ${{ env.CARGO_TARGET_DIR }}/i686-pc-windows-gnu/.package-lock.json
-        cargo build -j 1 -p polyglot-sql-ffi --profile ffi_release --target i686-pc-windows-gnu
+        RUSTFLAGS="-C opt-level=z -C codegen-units=1 -C strip=symbols" cargo build -j 2 -p polyglot-sql-ffi --profile ffi_release --target i686-pc-windows-gnu
 
     - name: Copy binaries to .NET Asset folders
       run: |
-        cp -f ${{ env.CARGO_TARGET_DIR }}/x86_64-pc-windows-gnu/ffi_release/polyglot_sql_ffi.dll ./src/PolyglotSql.Bundle/runtimes/win-x64/
-        cp -f ${{ env.CARGO_TARGET_DIR }}/i686-pc-windows-gnu/ffi_release/polyglot_sql_ffi.dll ./src/PolyglotSql.Bundle/runtimes/win-x86/
-        cp -f ${{ env.CARGO_TARGET_DIR }}/x86_64-unknown-linux-gnu/ffi_release/libpolyglot_sql_ffi.so ./src/PolyglotSql.Bundle/runtimes/linux-x64/
+        cp -f ${{ env.CARGO_TARGET_DIR }}/x86_64-pc-windows-gnu/ffi_release/polyglot_sql_ffi.dll ./src/PolyglotSql.Bundle/runtimes/win-x64/native/
+        cp -f ${{ env.CARGO_TARGET_DIR }}/i686-pc-windows-gnu/ffi_release/polyglot_sql_ffi.dll ./src/PolyglotSql.Bundle/runtimes/win-x86/native/
+        cp -f ${{ env.CARGO_TARGET_DIR }}/x86_64-unknown-linux-gnu/ffi_release/libpolyglot_sql_ffi.so ./src/PolyglotSql.Bundle/runtimes/linux-x64/native/
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
+    - name: Build .NET Solution
+      run: |
+        cd ./src
+        dotnet build -c Release
+
     - name: Pack NuGet Packages
       run: |
         cd ./src
         dotnet pack -c Release -o ./artifacts
 
-    - name: Publish to NuGet.org
-      if: github.event_name == 'release' && !env.ACT
-      run: |
-        dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://nuget.org
-        
     - name: Upload compiled packages to GitHub Interface
       uses: actions/upload-artifact@v4
       with:
         name: compiled-nuget-packages
-        path: ./artifacts/*.nupkg
+        path: ./src/artifacts/*.nupkg
+
+    - name: Run Integration Tests using Compiled NuGet Package
+      run: |
+        dotnet test ./src/PolyglotSql.Tests/PolyglotSql.Tests.csproj -c Release \
+          --logger "trx;LogFileName=test-results.trx" \
+          /p:UsePackage=true \
+          /p:RestoreAdditionalProjectSources=$(pwd)/src/artifacts
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always() # even if tests fail
+      with:
+        name: dotnet-test-results
+        path: ./src/PolyglotSql.Tests/TestResults/test-results.trx
+
+    - name: NuGet login (OIDC → temp API key)
+      if: github.event_name == 'release' && !env.ACT
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ksdbmergetools
+
+    - name: Publish to NuGet.org
+      if: github.event_name == 'release' && !env.ACT
+      run: |
+        dotnet nuget push ./src/artifacts/*.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+        
