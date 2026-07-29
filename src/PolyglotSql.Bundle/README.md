@@ -6,7 +6,7 @@ Polyglot SQL .NET is a managed .NET wrapper around the [Polyglot](https://github
  
 This package includes native polyglot binaries for win-x64, win-x86, and linux-x64 target runtimes. To make it work you need only one initialization call:
 
-```
+```cs
 BundleInitializer.Initialize();
 ```
 
