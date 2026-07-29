@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using PolyglotSql.Models;
@@ -124,6 +125,8 @@ namespace PolyglotSql
             }
         }
 
+        // to be moved to static extensions with c# 14+:
+
         public static string TranspileDataType(string sql, Dialect fromDialect, Dialect toDialect)
         {
             DataType fromType = ParseDataType(sql, fromDialect);
@@ -132,6 +135,11 @@ namespace PolyglotSql
 
             // like in regular Transpile - if no transpile result then return input
             return sql;
+        }
+
+        public static string GenerateOne(Expression ast, Dialect dialect = Dialect.Generic)
+        {
+            return Generate(new[] { ast }, dialect)?.FirstOrDefault();
         }
     }
 }

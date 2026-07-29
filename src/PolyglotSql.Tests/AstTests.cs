@@ -1,5 +1,6 @@
 using PolyglotSql;
 using PolyglotSql.Bundle;
+using System.Text.Json.Nodes;
 
 namespace PolyglotSql.Tests;
 
@@ -148,6 +149,34 @@ public class AstTests
 
             Assert.True(generated.Length == 1, "Should generate exactly one statement");
             Assert.Contains("SELECT", generated[0]);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
+            throw;
+        }
+    }
+
+    [Fact]
+    public void TestTransform()
+    {
+        Console.WriteLine("=== TestTransform ===");
+        try
+        {
+            string sql = "SELECT [a], b FROM t";
+            var dialect = Models.Dialect.TSQL;
+
+            Models.Expression ast = Polyglot.ParseOne(sql, dialect);
+
+            ast.TransformAll(node => {
+                if (node is JsonObject obj && obj.ContainsKey("quoted"))
+                {
+                    obj["quoted"] = true;
+                }
+            });
+
+            var generated = Polyglot.GenerateOne(ast, dialect);
+            Assert.Equal("SELECT [a], [b] FROM [t]", generated);
         }
         catch (Exception ex)
         {
