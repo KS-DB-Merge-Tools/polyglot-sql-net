@@ -66,17 +66,32 @@ namespace PolyglotSql.Bundle
         }
 
         [DllImport("libdl", EntryPoint = "dladdr")]
-        private static extern int dladdr(IntPtr addr, ref Dl_info info);
+        private static extern int UnixDlAddrV1(IntPtr addr, ref Dl_info info);
+
+        [DllImport("libdl.so.2", EntryPoint = "dladdr")]
+        private static extern int UnixDlAddrV2(IntPtr addr, ref Dl_info info);
 
         private static string GetUnixLibPath()
         {
             // current method handle inside current so
             IntPtr ptr = typeof(LibPathResolver).GetMethod(nameof(GetCurrentDllPath))!.MethodHandle.GetFunctionPointer();
             Dl_info info = new Dl_info();
-            if (dladdr(ptr, ref info) != 0 && info.dli_fname != IntPtr.Zero)
+            int addr;
+
+            try
+            {
+                addr = UnixDlAddrV2(ptr, ref info);
+            }
+            catch (DllNotFoundException)
+            {
+                addr = UnixDlAddrV1(ptr, ref info);
+            }
+
+            if (addr != 0 && info.dli_fname != IntPtr.Zero)
             {
                 return Marshal.PtrToStringAnsi(info.dli_fname) ?? AppContext.BaseDirectory;
             }
+
             return AppContext.BaseDirectory;
         }
         #endregion
