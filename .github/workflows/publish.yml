@@ -15,6 +15,10 @@ jobs:
       CARGO_HOME: /tmp/cargo-home
       CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 1
 
+    permissions:
+      id-token: write  # for NuGet/login (OIDC)
+      contents: write  # for artifacts
+
     steps:
     - name: Checkout wrapper repository
       uses: actions/checkout@v4
