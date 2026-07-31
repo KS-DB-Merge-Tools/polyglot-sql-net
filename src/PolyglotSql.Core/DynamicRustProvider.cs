@@ -199,7 +199,7 @@ namespace PolyglotSql
 
         public string[] TranspileWithOptions(string sql, Dialect fromDialect, Dialect toDialect, TranspileOptions options)
         {
-            string optionsJson = JsonSerializer.Serialize(options);
+            string optionsJson = JsonSerializer.Serialize(options, PolyglotJsonContext.Default.TranspileOptions);
             return CallNativeArray(_transpileWithOptions, sql, fromDialect.ToString().ToLowerInvariant(), toDialect.ToString().ToLowerInvariant(), optionsJson);
         }
 
@@ -208,7 +208,7 @@ namespace PolyglotSql
 
         public string[] FormatWithOptions(string sql, Dialect dialect, FormatGuardOptions options)
         {
-            string optionsJson = JsonSerializer.Serialize(options);
+            string optionsJson = JsonSerializer.Serialize(options, PolyglotJsonContext.Default.FormatGuardOptions);
             return CallNativeArray(_formatWithOptions, sql, dialect.ToString().ToLowerInvariant(), optionsJson);
         }
 
@@ -231,12 +231,12 @@ namespace PolyglotSql
         public DataType ParseDataType(string sql, Dialect dialect = Dialect.Generic)
         {
             string json = CallNative(_parseDataType, sql, dialect.ToString().ToLowerInvariant());
-            return JsonSerializer.Deserialize<DataType>(json)!;
+            return JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.DataType);
         }
 
         public string GenerateDataType(DataType dataType, Dialect dialect = Dialect.Generic)
         {
-            string json = JsonSerializer.Serialize(dataType);
+            string json = JsonSerializer.Serialize(dataType, PolyglotJsonContext.Default.DataType);
             return CallNative(_generateDataType, json, dialect.ToString().ToLowerInvariant());
         }
 
@@ -260,14 +260,14 @@ namespace PolyglotSql
 
         public Expression[] QualifyTables(Expression[] ast, QualifyTablesOptions options = null)
         {
-            string astJson = JsonSerializer.Serialize(ast);
+            string astJson = JsonSerializer.Serialize(ast, PolyglotJsonContext.Default.ExpressionArray);
             string optionsJson = JsonSerializer.Serialize(options ?? new QualifyTablesOptions(), PolyglotJsonContext.Default.QualifyTablesOptions);
             return CallNativeQualifyTables(_qualifyTables, astJson, optionsJson);
         }
 
         public Expression[] RenameTablesWithOptions(Expression[] ast, Dictionary<string, string> mapping, RenameTablesOptions options = null)
         {
-            string astJson = JsonSerializer.Serialize(ast);
+            string astJson = JsonSerializer.Serialize(ast, PolyglotJsonContext.Default.ExpressionArray);
             string mappingJson = JsonSerializer.Serialize(mapping ?? new Dictionary<string, string>(), PolyglotJsonContext.Default.DictionaryStringString);
             string optionsJson = JsonSerializer.Serialize(options ?? new RenameTablesOptions(), PolyglotJsonContext.Default.RenameTablesOptions);
             return CallNativeRenameTables(_renameTables, astJson, mappingJson, optionsJson);
@@ -301,7 +301,7 @@ namespace PolyglotSql
 
         public string[] Generate(Expression[] ast, Dialect dialect = Dialect.Generic)
         {
-            string astJson = JsonSerializer.Serialize(ast);
+            string astJson = JsonSerializer.Serialize(ast, PolyglotJsonContext.Default.ExpressionArray);
             return CallNativeGenerate(_generate, astJson, dialect.ToString().ToLowerInvariant());
         }
 
@@ -325,7 +325,7 @@ namespace PolyglotSql
             try
             {
                 string json = Marshal.PtrToStringAnsi(ptr) ?? "[]";
-                return JsonSerializer.Deserialize<string[]>(json) ?? Array.Empty<string>();
+                return JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.StringArray) ?? Array.Empty<string>();
             }
             finally
             {
@@ -872,7 +872,7 @@ namespace PolyglotSql
                 : "[]";
 
             _freeResult(result);
-            return JsonSerializer.Deserialize<string[]>(json)!;
+            return JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.StringArray)!;
         }
 
         private Expression[] HandleResultExpressionArray(PolyglotResult result)

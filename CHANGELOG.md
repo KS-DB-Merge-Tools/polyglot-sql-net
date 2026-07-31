@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
  
 ### Fixed
 
+- AOT json serialization issues
+
 - More compact nuget pachage descriptions
 
 ## [0.2.0] - 2026-07-29

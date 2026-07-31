@@ -86,6 +86,17 @@ expression.TransformAll(node => {
 var generated = Polyglot.GenerateOne(expression, dialect); // SELECT [a], [b] FROM [t]
 ```
 
+If `TransformAll()` is not enough for your needs and you still need to deserialize-modify-serialize, and if you need to keep this AOT-compatible, use source generators based on `PolyglotJsonContext` json serialization context:
+
+```cs
+var parsedExpression = Polyglot.ParseOne(sql, dialect);
+JsonNode rootNode = JsonNode.Parse(parsedExpression.ToJsonString());
+// modify rootNode or its children
+string modifiedJson = rootNode.ToJsonString();
+var modifiedExpression = JsonSerializer.Deserialize(modifiedJson, PolyglotJsonContext.Default.Expression);
+string[] result = Polyglot.Generate(new[] { normalizedExpression }, dialect);
+```
+
 ## Native Polyglot Version
 
 The current version of this library is based on the Polyglot version from file [polyglot-version.txt](polyglot-version.txt). The Bundle package includes binaries built from that version. If you use the Core package with some other version, it may fail to work with some other verions because of missing methods or other signature changes.
