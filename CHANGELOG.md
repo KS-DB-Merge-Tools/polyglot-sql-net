@@ -13,6 +13,16 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 
+## [0.2.1] - yyyy-mm-dd
+ 
+### Added
+
+### Changed
+ 
+### Fixed
+
+- More compact nuget pachage descriptions
+
 ## [0.2.0] - 2026-07-29
  
 ### Added
