@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 
-## [0.2.1] - yyyy-mm-dd
+## [0.2.1] - 2026-07-31
  
 ### Added
 
