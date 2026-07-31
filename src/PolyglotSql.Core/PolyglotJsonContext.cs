@@ -34,6 +34,7 @@ namespace PolyglotSql
     [JsonSerializable(typeof(OpenLineageWarning))]
     [JsonSerializable(typeof(OpenLineageEventResult))]
     [JsonSerializable(typeof(Expression))]
+    [JsonSerializable(typeof(Expression[]))]
     [JsonSerializable(typeof(AnalyzeQueryOptions))]
     [JsonSerializable(typeof(QueryAnalysis))]
     [JsonSerializable(typeof(ProjectionFact))]
@@ -44,6 +45,8 @@ namespace PolyglotSql
     [JsonSerializable(typeof(ValidationResult))]
     [JsonSerializable(typeof(ValidationError))]
     [JsonSerializable(typeof(ValidationError[]))]
+    [JsonSerializable(typeof(TranspileOptions))]
+    [JsonSerializable(typeof(FormatGuardOptions))]
     public partial class PolyglotJsonContext : JsonSerializerContext
     {
     }

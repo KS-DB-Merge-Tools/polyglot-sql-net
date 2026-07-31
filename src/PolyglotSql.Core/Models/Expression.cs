@@ -19,7 +19,7 @@ namespace PolyglotSql.Models
 
         public void TransformAll(Action<JsonNode> transform)
         {
-            var rootNode = this.Json.Deserialize<JsonNode>();
+            var rootNode = JsonNode.Parse(this.ToJsonString());
             TransformRecursive(rootNode, transform);
             var newJsonString = rootNode.ToJsonString();
             var doc = JsonDocument.Parse(newJsonString);
