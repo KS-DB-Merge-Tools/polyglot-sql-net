@@ -10,4 +10,4 @@ This package includes native polyglot binaries for win-x64, win-x86, and linux-x
 BundleInitializer.Initialize();
 ```
 
-Please note that packaged native binary works only if your project has <RuntimeIdentifier> matching to one of supported runtimes or if you're using it in the .NET framework project. In other cases please consider using the **PolyglotSql.Core** package which provides more flexibility.
+Please note that packaged native binary works only if your project has <RuntimeIdentifier> matching to one of supported runtimes or if you're using it in the .NET framework project. In other cases please consider using the [PolyglotSql.Core](https://www.nuget.org/packages/PolyglotSql.Core) package which provides more flexibility.

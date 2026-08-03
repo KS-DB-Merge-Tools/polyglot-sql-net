@@ -11,4 +11,4 @@ var provider = new DynamicRustProvider(libPath);
 Polyglot.RegisterProvider(provider);
 ```
 
-If you want to make it work out of the box without searching for the native polyglot library, please consider using the **PolyglotSql.Bundle** package - it goes with binaries for win-x64, win-x86, and linux-x64 runtimes.
+If you want to make it work out of the box without searching for the native polyglot library, please consider using the [PolyglotSql.Bundle](https://www.nuget.org/packages/PolyglotSql.Bundle) package - it goes with binaries for win-x64, win-x86, and linux-x64 runtimes.
