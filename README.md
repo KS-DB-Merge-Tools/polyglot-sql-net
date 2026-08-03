@@ -43,7 +43,7 @@ Console.WriteLine(result); // SELECT TOP 10 [id], [name] FROM [person]
 Almost all objects that Polyglot accepts and returns as JSON are represented as separate classes in the `Polyglot.Models` namespace, with a set of properties from the original library. Here's an example of using the `TranspileOptions` class:
 
 ```cs
-var options = new TranspileOptions { Pretty = pretty };
+var options = new TranspileOptions { Pretty = true };
 string result = Polyglot
 	.TranspileWithOptions("SELECT `a` FROM `t`", Dialect.MySQL, Dialect.TSQL, options)
 	.FirstOrDefault();
@@ -86,12 +86,14 @@ expression.TransformAll(node => {
 var generated = Polyglot.GenerateOne(expression, dialect); // SELECT [a], [b] FROM [t]
 ```
 
-If `TransformAll()` is not enough for your needs and you still need to deserialize-modify-serialize, and if you need to keep this AOT-compatible, use source generators based on `PolyglotJsonContext` json serialization context:
+If `TransformAll()` is not enough for your needs and you still need to deserialize-modify-serialize, use source generators based on `PolyglotJsonContext` json serialization context to keep serialization AOT-compatible:
 
 ```cs
 var parsedExpression = Polyglot.ParseOne(sql, dialect);
 JsonNode rootNode = JsonNode.Parse(parsedExpression.ToJsonString());
-// modify rootNode or its children
+// ..
+// .. modify rootNode or its children ..
+// ..
 string modifiedJson = rootNode.ToJsonString();
 var modifiedExpression = JsonSerializer.Deserialize(modifiedJson, PolyglotJsonContext.Default.Expression);
 string[] result = Polyglot.Generate(new[] { normalizedExpression }, dialect);
