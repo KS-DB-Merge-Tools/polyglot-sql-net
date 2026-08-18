@@ -13,13 +13,13 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 
-## [0.2.2] - 2026-08-03
+## [0.3.0] - 2026-08-18
  
 ### Added
 
 ### Changed
  
-- Update Polyglot to v0.6.3
+- Update Polyglot to v0.9.1
 
 ### Fixed
 
