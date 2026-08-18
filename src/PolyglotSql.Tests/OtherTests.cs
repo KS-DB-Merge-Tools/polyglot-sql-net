@@ -14,83 +14,47 @@ public class OtherTests
     [Fact]
     public void TestAnalyzeQuery()
     {
-        Console.WriteLine("=== TestAnalyzeQuery ===");
-        try
-        {
-            string sql = "SELECT a FROM t";
-            var analysis = Polyglot.AnalyzeQuery(sql);
-            Console.WriteLine($"Shape: {analysis.Shape}, projections: {analysis.Projections.Length}, relations: {analysis.Relations.Length}");
+        string sql = "SELECT a FROM t";
+        var analysis = Polyglot.AnalyzeQuery(sql);
+        Console.WriteLine($"Shape: {analysis.Shape}, projections: {analysis.Projections.Length}, relations: {analysis.Relations.Length}");
 
-            Assert.Equal(QueryShape.select, analysis.Shape);
-            Assert.True(analysis.Projections.Length >= 1);
-            Assert.Contains(analysis.Relations, r => r.Name == "t");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
-            throw;
-        }
+        Assert.Equal(QueryShape.select, analysis.Shape);
+        Assert.True(analysis.Projections.Length >= 1);
+        Assert.Contains(analysis.Relations, r => r.Name == "t");
     }
 
     [Fact]
     public void TestValidateValid()
     {
-        Console.WriteLine("=== TestValidateValid ===");
-        try
-        {
-            var result = Polyglot.Validate("SELECT 1");
-            Console.WriteLine($"Valid: {result.Valid}, errors: {result.Errors?.Length ?? 0}");
+        var result = Polyglot.Validate("SELECT 1");
+        Console.WriteLine($"Valid: {result.Valid}, errors: {result.Errors?.Length ?? 0}");
 
-            Assert.True(result.Valid, "SELECT 1 should be valid");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
-            throw;
-        }
+        Assert.True(result.Valid, "SELECT 1 should be valid");
     }
 
     [Fact]
     public void TestValidateInvalid()
     {
-        Console.WriteLine("=== TestValidateInvalid ===");
-        try
-        {
-            var result = Polyglot.Validate("SELCT 1");
-            Console.WriteLine($"Valid: {result.Valid}, errors: {result.Errors?.Length ?? 0}");
-            if (result.Errors != null)
-                foreach (var e in result.Errors)
-                    Console.WriteLine($"  [{e.Code}] {e.Message}");
+        var result = Polyglot.Validate("SELCT 1");
+        Console.WriteLine($"Valid: {result.Valid}, errors: {result.Errors?.Length ?? 0}");
+        if (result.Errors != null)
+            foreach (var e in result.Errors)
+                Console.WriteLine($"  [{e.Code}] {e.Message}");
 
-            Assert.False(result.Valid, "SELCT 1 (typo) should be invalid");
-            Assert.NotNull(result.Errors);
-            Assert.True(result.Errors.Length > 0);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
-            throw;
-        }
+        Assert.False(result.Valid, "SELCT 1 (typo) should be invalid");
+        Assert.NotNull(result.Errors);
+        Assert.True(result.Errors.Length > 0);
     }
 
     [Fact]
     public void TestVersionInfo()
     {
-        Console.WriteLine("=== TestVersionInfo ===");
-        try
-        {
-            var versionInfo = Polyglot.VersionInfo;
-            Console.WriteLine($"NativeRuntimeVersion: {versionInfo.NativeRuntimeVersion}");
-            Console.WriteLine($"WrapperVersion: {versionInfo.WrapperVersion}");
-            Console.WriteLine($"NativeExpectedVersion: {versionInfo.NativeExpectedVersion}");
+        var versionInfo = Polyglot.VersionInfo;
+        Console.WriteLine($"NativeRuntimeVersion: {versionInfo.NativeRuntimeVersion}");
+        Console.WriteLine($"WrapperVersion: {versionInfo.WrapperVersion}");
+        Console.WriteLine($"NativeExpectedVersion: {versionInfo.NativeExpectedVersion}");
 
-            Assert.False(string.IsNullOrEmpty(versionInfo.NativeRuntimeVersion));
-            Assert.StartsWith("0.3.0", versionInfo.WrapperVersion);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
-            throw;
-        }
+        Assert.False(string.IsNullOrEmpty(versionInfo.NativeRuntimeVersion));
+        Assert.StartsWith("0.3.0", versionInfo.WrapperVersion);
     }
 }

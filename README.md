@@ -95,7 +95,8 @@ JsonNode rootNode = JsonNode.Parse(parsedExpression.ToJsonString());
 // .. modify rootNode or its children ..
 // ..
 string modifiedJson = rootNode.ToJsonString();
-var modifiedExpression = JsonSerializer.Deserialize(modifiedJson, PolyglotJsonContext.Default.Expression);
+var modifiedExpression = JsonSerializer.Deserialize(
+	modifiedJson, PolyglotJsonContext.Default.Expression);
 string[] result = Polyglot.Generate(new[] { normalizedExpression }, dialect);
 ```
 

@@ -16,8 +16,6 @@ public class OptimizeTests
     [Fact]
     public void TestOptimizeRunsCanonicalizePass()
     {
-        Console.WriteLine("=== TestOptimizeRunsCanonicalizePass ===");
-
         // The Rust optimizer's canonicalize pass rewrites `IS NOT NULL` into
         // `NOT (... IS NULL)`. This proves the full parse -> optimize -> generate
         // pipeline executes end-to-end through the FFI.
@@ -34,8 +32,6 @@ public class OptimizeTests
     [Fact]
     public void TestOptimizeReturnsEquivalentSql()
     {
-        Console.WriteLine("=== TestOptimizeReturnsEquivalentSql ===");
-
         // A simple statement that the optimizer leaves unchanged must still be
         // returned as valid, parseable SQL without errors.
         string[] result = Polyglot.Optimize("SELECT 1 + 1", Dialect.Generic);

@@ -15,7 +15,6 @@ public class FormatTests
     [Fact]
     public void TestFormatBasic()
     {
-        Console.WriteLine("=== TestFormatBasic ===");
         string[] result = Polyglot.Format("SELECT 1", Dialect.Generic);
         Assert.NotEmpty(result);
         Assert.Contains("SELECT", result[0]);
@@ -25,8 +24,6 @@ public class FormatTests
     [Fact]
     public void TestFormatWithOptions()
     {
-        Console.WriteLine("=== TestFormatWithOptions ===");
-
         // A limit large enough to allow the input succeeds and returns formatted SQL.
         var allowed = new FormatGuardOptions { MaxInputBytes = 100 };
         string[] ok = Polyglot.FormatWithOptions("SELECT 1", Dialect.Generic, allowed);
