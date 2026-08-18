@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
  
 ### Added
 
+- Oracle-specific data types which were added in Polyglot v0.6.3
+
 ### Changed
  
 - Update Polyglot to v0.9.1
