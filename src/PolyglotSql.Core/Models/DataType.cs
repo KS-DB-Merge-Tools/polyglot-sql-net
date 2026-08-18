@@ -43,6 +43,7 @@ namespace PolyglotSql.Models
     [JsonDerivedType(typeof(ObjectType), "object")]
     [JsonDerivedType(typeof(NullableType), "nullable")]
     [JsonDerivedType(typeof(CustomType), "custom")]
+    [JsonDerivedType(typeof(Oracle), "oracle")]
     [JsonDerivedType(typeof(GeometryType), "geometry")]
     [JsonDerivedType(typeof(GeographyType), "geography")]
     [JsonDerivedType(typeof(CharacterSetType), "character_set")]
@@ -323,6 +324,15 @@ namespace PolyglotSql.Models
             public string Name { get; set; }
         }
 
+        // Oracle-specific data types retained until the target dialect is known.
+        // Mirrors the native Rust `DataType::Oracle { oracle_type }` variant, which
+        // serializes as {"data_type":"oracle","oracle_type":{...}}.
+        public sealed record Oracle : DataType
+        {
+            [JsonPropertyName("oracle_type")]
+            public OracleDataType OracleType { get; set; }
+        }
+
         // Spatial types
         public sealed record GeometryType : DataType
         {
@@ -353,6 +363,203 @@ namespace PolyglotSql.Models
 
         // Unknown
         public sealed record Unknown : DataType;
+
+        // Oracle-specific data types whose semantics cannot be represented losslessly by
+        // the generic DataType variants. Mirrors the native Rust `OracleDataType` enum,
+        // which serializes as {"oracle_data_type":"<variant>",...}.
+        [JsonPolymorphic(TypeDiscriminatorPropertyName = "oracle_data_type")]
+        [JsonDerivedType(typeof(OracleNumber), "number")]
+        [JsonDerivedType(typeof(OracleBinaryFloat), "binary_float")]
+        [JsonDerivedType(typeof(OracleBinaryDouble), "binary_double")]
+        [JsonDerivedType(typeof(OracleFloat), "float")]
+        [JsonDerivedType(typeof(OracleCharacter), "character")]
+        [JsonDerivedType(typeof(OracleDate), "date")]
+        [JsonDerivedType(typeof(OracleTimestamp), "timestamp")]
+        [JsonDerivedType(typeof(OracleIntervalYearToMonth), "interval_year_to_month")]
+        [JsonDerivedType(typeof(OracleIntervalDayToSecond), "interval_day_to_second")]
+        [JsonDerivedType(typeof(OracleClob), "clob")]
+        [JsonDerivedType(typeof(OracleBlob), "blob")]
+        [JsonDerivedType(typeof(OracleRaw), "raw")]
+        [JsonDerivedType(typeof(OracleLong), "long")]
+        [JsonDerivedType(typeof(OracleRowId), "row_id")]
+        public abstract partial record OracleDataType
+        {
+            protected OracleDataType() { }
+        }
+
+        // Oracle NUMBER(precision, scale) variant. `scale` is signed (i32 in Rust) to
+        // support negative scales (-84..127).
+        public sealed record OracleNumber : OracleDataType
+        {
+            [JsonPropertyName("precision")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Precision { get; set; }
+            [JsonPropertyName("scale")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public int? Scale { get; set; }
+        }
+
+        // Oracle BINARY_FLOAT variant.
+        public sealed record OracleBinaryFloat : OracleDataType;
+
+        // Oracle BINARY_DOUBLE variant.
+        public sealed record OracleBinaryDouble : OracleDataType;
+
+        // Oracle FLOAT(precision) variant.
+        public sealed record OracleFloat : OracleDataType
+        {
+            [JsonPropertyName("precision")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Precision { get; set; }
+        }
+
+        // Oracle CHARACTER(length) variant with kind and length semantics.
+        public sealed record OracleCharacter : OracleDataType
+        {
+            [JsonPropertyName("kind")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public OracleCharacterKind? Kind { get; set; }
+            [JsonPropertyName("length")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Length { get; set; }
+            [JsonPropertyName("semantics")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public OracleCharacterLengthSemantics? Semantics { get; set; }
+        }
+
+        // Oracle DATE variant.
+        public sealed record OracleDate : OracleDataType;
+
+        // Oracle TIMESTAMP(precision, timezone) variant.
+        public sealed record OracleTimestamp : OracleDataType
+        {
+            [JsonPropertyName("precision")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Precision { get; set; }
+            [JsonPropertyName("timezone")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public OracleTimestampTimeZone? Timezone { get; set; }
+        }
+
+        // Oracle INTERVAL YEAR TO MONTH variant.
+        public sealed record OracleIntervalYearToMonth : OracleDataType
+        {
+            [JsonPropertyName("year_precision")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? YearPrecision { get; set; }
+        }
+
+        // Oracle INTERVAL DAY TO SECOND variant.
+        public sealed record OracleIntervalDayToSecond : OracleDataType
+        {
+            [JsonPropertyName("day_precision")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? DayPrecision { get; set; }
+            [JsonPropertyName("fractional_seconds_precision")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? FractionalSecondsPrecision { get; set; }
+        }
+
+        // Oracle CLOB/NATIONAL CLOB variant.
+        public sealed record OracleClob : OracleDataType
+        {
+            [JsonPropertyName("national")]
+            public bool National { get; set; }
+        }
+
+        // Oracle BLOB variant.
+        public sealed record OracleBlob : OracleDataType;
+
+        // Oracle RAW(length) variant.
+        public sealed record OracleRaw : OracleDataType
+        {
+            [JsonPropertyName("length")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Length { get; set; }
+        }
+
+        // Oracle LONG (raw) variant.
+        public sealed record OracleLong : OracleDataType
+        {
+            [JsonPropertyName("raw")]
+            public bool Raw { get; set; }
+        }
+
+        // Oracle ROWID variant.
+        public sealed record OracleRowId : OracleDataType;
+
+        [JsonConverter(typeof(SnakeCaseJsonEnumConverter<OracleCharacterKind>))]
+        public enum OracleCharacterKind
+        {
+            Char,
+            VarChar,
+            NChar,
+            NVarChar,
+        }
+
+        [JsonConverter(typeof(SnakeCaseJsonEnumConverter<OracleCharacterLengthSemantics>))]
+        public enum OracleCharacterLengthSemantics
+        {
+            Byte,
+            Char,
+        }
+
+        [JsonConverter(typeof(SnakeCaseJsonEnumConverter<OracleTimestampTimeZone>))]
+        public enum OracleTimestampTimeZone
+        {
+            None,
+            WithTimeZone,
+            WithLocalTimeZone,
+        }
+    }
+
+    /// <summary>
+    /// AOT-friendly string enum converter that serializes/deserializes enum
+    /// members using Rust-style snake_case names (e.g. `WithTimeZone` →
+    /// `with_time_zone`), matching the native Rust serde `rename_all` behavior.
+    /// Applied at the enum type level; System.Text.Json automatically uses it
+    /// for nullable `TEnum?` properties of that enum.
+    /// </summary>
+    public class SnakeCaseJsonEnumConverter<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
+    {
+        public override TEnum Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.String)
+                throw new JsonException();
+
+            string value = reader.GetString()!;
+            foreach (TEnum item in Enum.GetValues(typeof(TEnum)))
+            {
+                string name = Enum.GetName(typeof(TEnum), item)!;
+                if (string.Equals(name, value, StringComparison.OrdinalIgnoreCase))
+                    return item;
+                if (string.Equals(ToSnakeCase(name), value, StringComparison.OrdinalIgnoreCase))
+                    return item;
+            }
+            throw new JsonException($"The JSON value could not be converted to {typeof(TEnum).Name}.");
+        }
+
+        public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
+        {
+            string name = Enum.GetName(typeof(TEnum), value)!;
+            writer.WriteStringValue(ToSnakeCase(name));
+        }
+
+        private static string ToSnakeCase(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            var result = new System.Text.StringBuilder(name.Length + 1);
+            for (int i = 0; i < name.Length; i++)
+            {
+                char c = name[i];
+                if (char.IsUpper(c) && i > 0)
+                    result.Append('_');
+                result.Append(char.ToLowerInvariant(c));
+            }
+            return result.ToString();
+        }
     }
 
     public class StructField

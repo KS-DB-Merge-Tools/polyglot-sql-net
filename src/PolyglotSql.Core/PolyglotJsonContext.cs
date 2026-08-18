@@ -47,6 +47,10 @@ namespace PolyglotSql
     [JsonSerializable(typeof(ValidationError[]))]
     [JsonSerializable(typeof(TranspileOptions))]
     [JsonSerializable(typeof(FormatGuardOptions))]
+    [JsonSerializable(typeof(DataType.OracleDataType))]
+    [JsonSerializable(typeof(DataType.OracleCharacterKind))]
+    [JsonSerializable(typeof(DataType.OracleCharacterLengthSemantics))]
+    [JsonSerializable(typeof(DataType.OracleTimestampTimeZone))]
     public partial class PolyglotJsonContext : JsonSerializerContext
     {
     }
