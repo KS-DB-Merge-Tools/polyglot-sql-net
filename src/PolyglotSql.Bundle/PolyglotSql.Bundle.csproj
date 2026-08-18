@@ -11,12 +11,6 @@
     <PackageId>PolyglotSql.Bundle</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>A .NET FFI wrapper for the Polyglot Rust SQL transpiler. Parsing, formatting, AST generation, and translation between 30+ SQL dialects. The Bundle is an out-of-the-box package that includes Polyglot binaries.</Description>
-	
-	<!-- For .sln builds from VS, level up from $(SolutionDir) -->
-	<PackageOutputPath Condition="'$(SolutionDir)' != ''">$(SolutionDir)..\LocalPackages\</PackageOutputPath>
-  
-	<!-- For dotnet pack of concrete csproj, 2 levels up from $(SolutionDir) -->
-	<PackageOutputPath Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\LocalPackages\</PackageOutputPath>
   </PropertyGroup>
 
 	<!-- ProjectReference for non-package build -->

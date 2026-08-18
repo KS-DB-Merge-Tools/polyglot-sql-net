@@ -13,10 +13,6 @@
     <PackageId>PolyglotSql.Core</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>A .NET FFI wrapper for the Polyglot Rust SQL transpiler. Parsing, formatting, AST generation, and translation between 30+ SQL dialects. Use the Core package with your own Polyglot native library.</Description>
-	
-	<!-- move up to src level -->
-	<PackageOutputPath Condition="'$(SolutionDir)' != ''">$(SolutionDir)..\LocalPackages\</PackageOutputPath>
-	<PackageOutputPath Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\LocalPackages\</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
