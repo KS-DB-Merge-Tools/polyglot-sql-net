@@ -80,6 +80,7 @@ class RustField:
     json_key: str
     rust_type: str
     optional: bool
+    flatten: bool = False  # #[serde(flatten)] - the nested type's fields appear inline in JSON
 
 
 @dataclasses.dataclass
@@ -190,12 +191,29 @@ def split_top_level(text: str, sep: str = ",") -> list:
     return [p for p in parts if p.strip()]
 
 
+def _strip_line_comment(line: str) -> str:
+    """Cut a `//` comment off a line, ignoring `//` inside string literals (e.g. URLs)."""
+    in_string = False
+    i = 0
+    while i < len(line) - 1:
+        c = line[i]
+        if c == "\\" and in_string:
+            i += 2
+            continue
+        if c == '"':
+            in_string = not in_string
+        elif c == "/" and line[i + 1] == "/" and not in_string:
+            return line[:i].rstrip()
+        i += 1
+    return line
+
+
 def strip_doc_comments(text: str) -> str:
-    """Drop whole-line comments, both doc (`///`) and plain section comments (`//`) -
-    e.g. `// Numeric` above `Boolean,` in the DataType enum - since a leftover comment
-    line makes the next chunk fail the "is this a bare identifier" check and get
-    silently dropped as a parsed variant/field."""
-    return "\n".join(line for line in text.splitlines() if not line.strip().startswith("//"))
+    """Drop comments, both whole-line (`///`, `// Numeric` section headers) and trailing
+    (`LtLt, // <<`) - since a leftover comment ends up in front of the next comma-separated
+    chunk, which then fails the "is this a bare identifier" check and gets silently dropped
+    as a parsed variant/field."""
+    return "\n".join(_strip_line_comment(line) for line in text.splitlines())
 
 
 ATTR_RE = re.compile(r"#\[([^\]]*)\]")
@@ -307,7 +325,8 @@ def parse_field_chunk(chunk: str, rename_all: Optional[str]) -> Optional[RustFie
             explicit_rename = rm.group(1)
     optional = bool(re.match(r"Option\s*<", raw_type))
     json_key = field_json_key(field_name, explicit_rename, rename_all)
-    return RustField(name=field_name, json_key=json_key, rust_type=raw_type, optional=optional)
+    flatten = any(re.search(r"\bserde\s*\((?:[^)]*,\s*)?flatten\s*(?:[,)])", a) for a in attrs)
+    return RustField(name=field_name, json_key=json_key, rust_type=raw_type, optional=optional, flatten=flatten)
 
 
 # --------------------------------------------------------------------------- #
@@ -506,8 +525,29 @@ def resolve_rust_type(rust_root: Path, type_name: str):
         return None
     kind, path, text, def_start, source_kind = found
     if kind == "struct":
-        return "struct", parse_rust_struct(type_name, path, text, def_start, source_kind, rust_root)
+        rust_struct = parse_rust_struct(type_name, path, text, def_start, source_kind, rust_root)
+        rust_struct.fields = expand_flattened_fields(rust_root, rust_struct.fields, {type_name})
+        return "struct", rust_struct
     return "enum", parse_rust_enum(type_name, path, text, def_start, source_kind, rust_root)
+
+
+def expand_flattened_fields(rust_root: Path, fields: list, seen: set) -> list:
+    """Replace each #[serde(flatten)] field with the fields of its (struct) type, as they
+    appear inline in JSON (e.g. ColumnUseReferenceFact flattens ColumnReferenceFact)."""
+    expanded = []
+    for f in fields:
+        if not f.flatten:
+            expanded.append(f)
+            continue
+        inner_name = unwrap_rust_type(re.sub(r"\b(?:\w+::)+", "", f.rust_type))
+        found = find_type_definition(rust_root, inner_name) if inner_name not in seen else None
+        if not found or found[0] != "struct":
+            expanded.append(f)  # can't expand (enum/map/unknown) - keep as-is so it's visible
+            continue
+        _kind, path, text, def_start, source_kind = found
+        inner = parse_rust_struct(inner_name, path, text, def_start, source_kind, rust_root)
+        expanded.extend(expand_flattened_fields(rust_root, inner.fields, seen | {inner_name}))
+    return expanded
 
 
 # --------------------------------------------------------------------------- #

@@ -237,6 +237,62 @@
       "kind": "options",
       "dotnet_file": "PolyglotSql.Core/Models/SetOperationBranchFact.cs"
     },
+    "SetBranch": {
+      "dotnet_type": "SetBranch",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SetBranch.cs"
+    },
+    "SetOperator": {
+      "dotnet_type": "SetOperator",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperator.cs"
+    },
+    "CteFact": {
+      "dotnet_type": "CteFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/CteFact.cs"
+    },
+    "StarProjectionFact": {
+      "dotnet_type": "StarProjectionFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/StarProjectionFact.cs"
+    },
+    "TransformFunctionFact": {
+      "dotnet_type": "TransformFunctionFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/TransformFunctionFact.cs"
+    },
+    "ProjectionNullability": {
+      "dotnet_type": "ProjectionNullability",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/ProjectionNullability.cs"
+    },
+    "SetOperationBranchRole": {
+      "dotnet_type": "SetOperationBranchRole",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperationBranchRole.cs"
+    },
+    "ColumnUseFact": {
+      "dotnet_type": "ColumnUseFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnUseFact.cs"
+    },
+    "ColumnUseReferenceFact": {
+      "dotnet_type": "ColumnUseReferenceFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnUseReferenceFact.cs",
+      "notes": "Rust flattens ColumnReferenceFact into this type (#[serde(flatten)]); the .NET record repeats those properties."
+    },
+    "ColumnUseContext": {
+      "dotnet_type": "ColumnUseContext",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnUseContext.cs"
+    },
+    "QuerySourceSpan": {
+      "dotnet_type": "QuerySourceSpan",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/QuerySourceSpan.cs"
+    },
     "OpenLineageColumnLineageResult": {
       "dotnet_type": "OpenLineageColumnLineageResult",
       "kind": "options",
