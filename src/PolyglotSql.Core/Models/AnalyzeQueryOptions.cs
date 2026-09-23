@@ -11,5 +11,9 @@ namespace PolyglotSql.Models
         [JsonPropertyName("schema")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ValidationSchema Schema { get; set; }
+
+        [JsonPropertyName("complexityGuard")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ComplexityGuardOptions ComplexityGuard { get; set; }
     }
 }

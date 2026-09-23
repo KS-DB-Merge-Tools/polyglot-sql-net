@@ -56,7 +56,7 @@ FROM [t]
 */
 ```
 
-The only exception is the `Expression` class. At the time of Polyglot SQL .NET creation, the Rust library contained over 700 different AST node types. Creating a similar model on the C# side would require a huge amount of effort, significantly increased the library's size, and, most importantly, it would add an indefinite amount of work in the future to maintain synchronization between this codebase and Rust. Therefore, the decision was made to leave `Expression` as a thin wrapper over JSON:
+The only exceptions are `Expression` and `BuilderPlan` classes. At the time of Polyglot SQL .NET creation, the Rust library contained over 700 different AST node types. Creating a similar model on the C# side would require a huge amount of effort, significantly increased the library's size, and, most importantly, it would add an indefinite amount of work in the future to maintain synchronization between this codebase and Rust. Therefore, the decision was made to leave `Expression` as a thin wrapper over JSON:
 
 ```cs
 [JsonConverter(typeof(ExpressionJsonConverter))]
@@ -98,6 +98,21 @@ string modifiedJson = rootNode.ToJsonString();
 var modifiedExpression = JsonSerializer.Deserialize(
 	modifiedJson, PolyglotJsonContext.Default.Expression);
 string[] result = Polyglot.Generate(new[] { normalizedExpression }, dialect);
+```
+
+The same approach is used for the SQL builder plan (`polyglot_build`): its node/operation tree is large, so `BuilderPlan` is a thin JSON wrapper too. Create it from the plan JSON and get the result either as SQL or as an `Expression`:
+
+```cs
+var plan = BuilderPlan.FromJson(@"{
+	""base"": { ""kind"": ""select"", ""expressions"": [ { ""kind"": ""column"", ""name"": ""a"" } ] },
+	""operations"": [
+		{ ""kind"": ""from"", ""source"": { ""kind"": ""table"", ""name"": ""t"" } },
+		{ ""kind"": ""limit"", ""expression"": { ""kind"": ""literal"", ""value"": { ""kind"": ""integer"", ""value"": 10 } } }
+	]
+}");
+
+string sql = Polyglot.BuildSql(plan, Dialect.Generic, Dialect.TSQL); // SELECT TOP 10 a FROM t
+Expression ast = Polyglot.BuildAst(plan);
 ```
 
 ## Native Polyglot Version

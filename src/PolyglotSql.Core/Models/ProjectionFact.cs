@@ -21,6 +21,10 @@ namespace PolyglotSql.Models
         [JsonPropertyName("transformKind")]
         public TransformKind TransformKind { get; set; }
 
+        [JsonPropertyName("transformFunction")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public TransformFunctionFact TransformFunction { get; set; }
+
         [JsonPropertyName("castType")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string CastType { get; set; }
@@ -28,6 +32,9 @@ namespace PolyglotSql.Models
         [JsonPropertyName("typeHint")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string TypeHint { get; set; }
+
+        [JsonPropertyName("nullability")]
+        public ProjectionNullability Nullability { get; set; } = ProjectionNullability.unknown;
 
         [JsonPropertyName("upstream")]
         public ColumnReferenceFact[] Upstream { get; set; }

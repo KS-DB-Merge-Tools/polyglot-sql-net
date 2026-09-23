@@ -1,25 +1,40 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
 {
+    // Filled by LineageParser; [JsonPropertyName] documents the native JSON keys
+    // (and lets the API drift script compare this type against Rust).
     public record LineageNode
     {
+        [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
+        [JsonPropertyName("expression")]
         public Expression Expression { get; set; }
 
+        [JsonPropertyName("source")]
         public Expression Source { get; set; }
 
+        [JsonPropertyName("downstream")]
         public List<LineageNode> Downstream { get; set; } = new List<LineageNode>();
 
+        [JsonPropertyName("source_name")]
         public string SourceName { get; set; } = string.Empty;
 
+        [JsonPropertyName("source_kind")]
         public SourceKind SourceKind { get; set; } = SourceKind.unknown;
 
+        [JsonPropertyName("source_alias")]
         public string SourceAlias { get; set; } = string.Empty;
 
+        // Immediate set-operation branch metadata, when this node is a branch root; otherwise null.
+        [JsonPropertyName("set_branch")]
+        public SetBranch SetBranch { get; set; }
+
+        [JsonPropertyName("reference_node_name")]
         public string ReferenceNodeName { get; set; } = string.Empty;
 
         public override string ToString()
@@ -63,6 +78,9 @@ namespace PolyglotSql.Models
 
             if (elem.TryGetProperty("source_alias", out var sourceAlias))
                 node.SourceAlias = sourceAlias.GetString() ?? string.Empty;
+
+            if (elem.TryGetProperty("set_branch", out var setBranch) && setBranch.ValueKind == JsonValueKind.Object)
+                node.SetBranch = setBranch.Deserialize(PolyglotJsonContext.Default.SetBranch);
 
             if (elem.TryGetProperty("reference_node_name", out var refName))
                 node.ReferenceNodeName = refName.GetString() ?? string.Empty;

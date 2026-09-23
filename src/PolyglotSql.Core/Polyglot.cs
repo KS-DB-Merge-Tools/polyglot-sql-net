@@ -107,6 +107,48 @@ namespace PolyglotSql
         public static ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic)
             => Provider.Validate(sql, dialect);
 
+        public static Expression[] ParseWithOptions(string sql, Dialect dialect = Dialect.Generic, ParseOptions options = null)
+            => Provider.ParseWithOptions(sql, dialect, options);
+
+        public static Expression ParseOneWithOptions(string sql, Dialect dialect = Dialect.Generic, ParseOptions options = null)
+            => Provider.ParseOneWithOptions(sql, dialect, options);
+
+        public static DataType ParseDataTypeWithOptions(string sql, Dialect dialect = Dialect.Generic, ParseOptions options = null)
+            => Provider.ParseDataTypeWithOptions(sql, dialect, options);
+
+        public static ValidationResult ValidateWithOptions(string sql, Dialect dialect = Dialect.Generic, ValidationOptions options = null)
+            => Provider.ValidateWithOptions(sql, dialect, options);
+
+        public static ValidationResult ValidateWithSchema(string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic, SchemaValidationOptions options = null)
+            => Provider.ValidateWithSchema(sql, schema, dialect, options);
+
+        public static LineageNode LineageAt(int ordinal, string sql, Dialect dialect = Dialect.Generic)
+            => Provider.LineageAt(ordinal, sql, dialect);
+
+        public static LineageNode LineageAtWithSchema(int ordinal, string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic)
+            => Provider.LineageAtWithSchema(ordinal, sql, schema, dialect);
+
+        public static QueryOutput OutputColumns(string sql, Dialect dialect = Dialect.Generic)
+            => Provider.OutputColumns(sql, dialect);
+
+        public static QueryOutput OutputColumnsWithSchema(string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic)
+            => Provider.OutputColumnsWithSchema(sql, schema, dialect);
+
+        public static Expression[] SetLimit(Expression[] ast, ulong limit)
+            => Provider.SetLimit(ast, limit);
+
+        public static Expression[] SetOffset(Expression[] ast, ulong offset)
+            => Provider.SetOffset(ast, offset);
+
+        public static Expression[] SetOrderBy(Expression[] ast, Expression[] orderBy)
+            => Provider.SetOrderBy(ast, orderBy);
+
+        public static Expression BuildAst(BuilderPlan plan, Dialect readDialect = Dialect.Generic)
+            => Provider.BuildAst(plan, readDialect);
+
+        public static string BuildSql(BuilderPlan plan, Dialect readDialect = Dialect.Generic, Dialect outputDialect = Dialect.Generic)
+            => Provider.BuildSql(plan, readDialect, outputDialect);
+
         public static VersionInfo VersionInfo
         {
             get

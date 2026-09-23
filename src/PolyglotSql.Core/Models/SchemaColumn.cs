@@ -22,5 +22,9 @@ namespace PolyglotSql.Models
         [JsonPropertyName("unique")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public bool Unique { get; set; }
+
+        [JsonPropertyName("references")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public SchemaColumnReference References { get; set; }
     }
 }

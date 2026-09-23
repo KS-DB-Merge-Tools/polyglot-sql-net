@@ -9,11 +9,7 @@ namespace PolyglotSql.Models
         root,
         cte,
         derived_table,
-        subquery,
         table,
-        @virtual,
-        view,
-        lateral,
-        unnest
+        @virtual
     }
 }

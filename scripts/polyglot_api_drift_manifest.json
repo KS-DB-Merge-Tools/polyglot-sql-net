@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "types": {
+    "TranspileOptions": {
+      "dotnet_type": "TranspileOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/TranspileOptions.cs"
+    },
+    "ComplexityGuardOptions": {
+      "dotnet_type": "ComplexityGuardOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ComplexityGuardOptions.cs"
+    },
+    "ParseOptions": {
+      "dotnet_type": "ParseOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ParseOptions.cs"
+    },
+    "FormatGuardOptions": {
+      "dotnet_type": "FormatGuardOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/FormatGuardOptions.cs"
+    },
+    "ValidationOptions": {
+      "dotnet_type": "ValidationOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ValidationOptions.cs"
+    },
+    "SchemaValidationOptions": {
+      "dotnet_type": "SchemaValidationOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SchemaValidationOptions.cs",
+      "notes": "Rust uses snake_case field names with camelCase aliases; .NET writes the snake_case names. function_catalog is #[serde(skip)] and not part of the JSON contract."
+    },
+    "FfiQualifyTablesOptions": {
+      "dotnet_type": "QualifyTablesOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/QualifyTablesOptions.cs",
+      "notes": "FFI-local mirror of the core (non-serde) QualifyTablesOptions builder struct; this is the actual JSON contract type."
+    },
+    "FfiRenameTablesOptions": {
+      "dotnet_type": "RenameTablesOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/RenameTablesOptions.cs",
+      "notes": "FFI-local mirror of the core (non-serde) RenameTablesOptions builder struct; this is the actual JSON contract type."
+    },
+    "OpenLineageOptions": {
+      "dotnet_type": "OpenLineageOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageOptions.cs"
+    },
+    "AnalyzeQueryOptions": {
+      "dotnet_type": "AnalyzeQueryOptions",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/AnalyzeQueryOptions.cs"
+    },
+    "BuildRequest": {
+      "dotnet_type": "BuildRequest",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/BuildRequest.cs"
+    },
+    "BuilderOutput": {
+      "dotnet_type": "BuilderOutput",
+      "kind": "tagged_union",
+      "dotnet_file": "PolyglotSql.Core/Models/BuilderOutput.cs"
+    },
+    "BuilderPlan": {
+      "dotnet_type": "BuilderPlan",
+      "kind": "opaque",
+      "dotnet_file": "PolyglotSql.Core/Models/BuilderPlan.cs",
+      "notes": "Thin JSON wrapper (like Expression); the BuildNode/BuildOperation tree is intentionally not modeled in .NET."
+    },
+    "Expression": {
+      "dotnet_type": "Expression",
+      "kind": "opaque",
+      "dotnet_file": "PolyglotSql.Core/Models/Expression.cs",
+      "notes": "Thin JSON wrapper by design (700+ AST node types are not modeled in .NET)."
+    },
+    "QueryOutput": {
+      "dotnet_type": "QueryOutput",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/QueryOutput.cs",
+      "notes": "Result of polyglot_output_columns / polyglot_output_columns_with_schema."
+    },
+    "OutputColumn": {
+      "dotnet_type": "OutputColumn",
+      "kind": "tagged_union",
+      "dotnet_file": "PolyglotSql.Core/Models/OutputColumn.cs"
+    },
+    "ValidationSchema": {
+      "dotnet_type": "ValidationSchema",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ValidationSchema.cs"
+    },
+    "DialectType": {
+      "dotnet_type": "Dialect",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/Dialect.cs"
+    },
+    "ValidationSeverity": {
+      "dotnet_type": "ValidationSeverity",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/ValidationSeverity.cs"
+    },
+    "UnsupportedLevel": {
+      "dotnet_type": "UnsupportedLevel",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/UnsupportedLevel.cs"
+    },
+    "QueryShape": {
+      "dotnet_type": "QueryShape",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/QueryShape.cs"
+    },
+    "TransformKind": {
+      "dotnet_type": "TransformKind",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/TransformKind.cs"
+    },
+    "ReferenceConfidence": {
+      "dotnet_type": "ReferenceConfidence",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/ReferenceConfidence.cs"
+    },
+    "SourceKind": {
+      "dotnet_type": "SourceKind",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/SourceKind.cs"
+    },
+    "Edit": {
+      "dotnet_type": "DiffEditType",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/DiffEditType.cs",
+      "notes": "Rust type name differs from .NET (Edit -> DiffEditType). Rust models per-edit data (expression/source/target) that the flat .NET enum does not capture, so only the variant-name set is compared. 'unknown' is a .NET-only parse fallback.",
+      "dotnet_only_members": ["unknown"]
+    },
+    "OpenLineageRunEventType": {
+      "dotnet_type": "OpenLineageRunEventType",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageRunEventType.cs"
+    },
+    "DataType": {
+      "dotnet_type": "DataType",
+      "kind": "tagged_union",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
+    },
+    "OracleDataType": {
+      "dotnet_type": "OracleDataType",
+      "kind": "tagged_union",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs",
+      "notes": "Nested tagged union. .NET derived class names are prefixed (e.g. Rust variant 'Number' -> C# 'OracleNumber') but matched by JSON discriminator string, not class name."
+    },
+    "OracleCharacterKind": {
+      "dotnet_type": "OracleCharacterKind",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
+    },
+    "OracleCharacterLengthSemantics": {
+      "dotnet_type": "OracleCharacterLengthSemantics",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
+    },
+    "OracleTimestampTimeZone": {
+      "dotnet_type": "OracleTimestampTimeZone",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
+    },
+    "OpenLineageDatasetId": {
+      "dotnet_type": "OpenLineageDatasetId",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageDatasetId.cs"
+    },
+    "SchemaTable": {
+      "dotnet_type": "SchemaTable",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SchemaTable.cs"
+    },
+    "SchemaColumn": {
+      "dotnet_type": "SchemaColumn",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SchemaColumn.cs"
+    },
+    "SchemaColumnReference": {
+      "dotnet_type": "SchemaColumnReference",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SchemaColumnReference.cs"
+    },
+    "SchemaForeignKey": {
+      "dotnet_type": "SchemaForeignKey",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SchemaForeignKey.cs"
+    },
+    "SchemaTableReference": {
+      "dotnet_type": "SchemaTableReference",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SchemaTableReference.cs"
+    },
+    "StructField": {
+      "dotnet_type": "StructField",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
+    },
+    "LineageNode": {
+      "dotnet_type": "LineageNode",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/LineageResult.cs",
+      "notes": "Result of polyglot_lineage* functions. Filled by LineageParser; property JSON keys come from [JsonPropertyName]."
+    },
+    "QueryAnalysis": {
+      "dotnet_type": "QueryAnalysis",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/QueryAnalysis.cs",
+      "notes": "Result of polyglot_analyze_query."
+    },
+    "ProjectionFact": {
+      "dotnet_type": "ProjectionFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ProjectionFact.cs"
+    },
+    "ColumnReferenceFact": {
+      "dotnet_type": "ColumnReferenceFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnReferenceFact.cs"
+    },
+    "RelationFact": {
+      "dotnet_type": "RelationFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/RelationFact.cs"
+    },
+    "SetOperationFact": {
+      "dotnet_type": "SetOperationFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperationFact.cs"
+    },
+    "SetOperationBranchFact": {
+      "dotnet_type": "SetOperationBranchFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperationBranchFact.cs"
+    },
+    "SetBranch": {
+      "dotnet_type": "SetBranch",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SetBranch.cs"
+    },
+    "SetOperator": {
+      "dotnet_type": "SetOperator",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperator.cs"
+    },
+    "CteFact": {
+      "dotnet_type": "CteFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/CteFact.cs"
+    },
+    "StarProjectionFact": {
+      "dotnet_type": "StarProjectionFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/StarProjectionFact.cs"
+    },
+    "TransformFunctionFact": {
+      "dotnet_type": "TransformFunctionFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/TransformFunctionFact.cs"
+    },
+    "ProjectionNullability": {
+      "dotnet_type": "ProjectionNullability",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/ProjectionNullability.cs"
+    },
+    "SetOperationBranchRole": {
+      "dotnet_type": "SetOperationBranchRole",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperationBranchRole.cs"
+    },
+    "ColumnUseFact": {
+      "dotnet_type": "ColumnUseFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnUseFact.cs"
+    },
+    "ColumnUseReferenceFact": {
+      "dotnet_type": "ColumnUseReferenceFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnUseReferenceFact.cs",
+      "notes": "Rust flattens ColumnReferenceFact into this type (#[serde(flatten)]); the .NET record repeats those properties."
+    },
+    "ColumnUseContext": {
+      "dotnet_type": "ColumnUseContext",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnUseContext.cs"
+    },
+    "QuerySourceSpan": {
+      "dotnet_type": "QuerySourceSpan",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/QuerySourceSpan.cs"
+    },
+    "OpenLineageColumnLineageResult": {
+      "dotnet_type": "OpenLineageColumnLineageResult",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageColumnLineageResult.cs",
+      "notes": "Result of polyglot_openlineage_column_lineage."
+    },
+    "OpenLineageEventResult": {
+      "dotnet_type": "OpenLineageEventResult",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageEventResult.cs",
+      "notes": "Result of polyglot_openlineage_job_event / polyglot_openlineage_run_event."
+    },
+    "OpenLineageDataset": {
+      "dotnet_type": "OpenLineageDataset",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageDataset.cs"
+    },
+    "ColumnLineageDatasetFacet": {
+      "dotnet_type": "ColumnLineageDatasetFacet",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnLineageDatasetFacet.cs"
+    },
+    "ColumnLineageField": {
+      "dotnet_type": "ColumnLineageField",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnLineageField.cs"
+    },
+    "OpenLineageInputField": {
+      "dotnet_type": "OpenLineageInputField",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageInputField.cs"
+    },
+    "OpenLineageTransformation": {
+      "dotnet_type": "OpenLineageTransformation",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageTransformation.cs"
+    },
+    "OpenLineageWarning": {
+      "dotnet_type": "OpenLineageWarning",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageWarning.cs"
+    },
+    "Token": {
+      "dotnet_type": "Token",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/Token.cs",
+      "notes": "Result of polyglot_tokenize."
+    },
+    "Span": {
+      "dotnet_type": "Span",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/Span.cs"
+    },
+    "TokenType": {
+      "dotnet_type": "TokenType",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/TokenType.cs"
+    },
+    "ValidationError": {
+      "dotnet_type": "ValidationError",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ValidationError.cs",
+      "notes": "Element of errors_json returned by polyglot_validate*."
+    },
+    "ValidationResult": {
+      "dotnet_type": "ValidationResult",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ValidationResult.cs",
+      "notes": "FFI returns valid + errors_json in a C struct; .NET assembles the same shape as the core Rust ValidationResult."
+    }
+  },
+  "dotnet_only_types": {
+    "DiffResult": "Wrapper built by DiffParser around the Vec<Edit> returned by polyglot_diff (edits + per-type counts). The Rust Edit variants are compared via the DiffEditType entry.",
+    "DiffEdit": "Flattened form of the Rust Edit tagged union (type + expression/source/target), built by DiffParser.",
+    "DiffParser": "Hand-written parser for polyglot_diff output, not a model.",
+    "LineageParser": "Hand-written parser for polyglot_lineage* output, not a model.",
+    "UnionField": "Element of DataType::Union fields, serialized by UnionFieldConverter as a Rust (name, DataType) tuple.",
+    "ObjectField": "Element of DataType::Object fields, serialized by ObjectFieldConverter as a Rust (name, DataType, not_null) tuple.",
+    "VersionInfo": "Wrapper/native version info assembled on the .NET side (Polyglot.VersionInfo)."
+  }
+}

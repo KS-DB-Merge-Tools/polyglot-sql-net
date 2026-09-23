@@ -126,6 +126,22 @@ public class TokenizerTests
         Assert.Equal(9, tokens[1].Span.Column);
     }
 
+    [Theory]
+    [InlineData("a::INT", Dialect.PostgreSQL, TokenType.D_COLON)]
+    [InlineData("a ILIKE 'x'", Dialect.PostgreSQL, TokenType.I_LIKE)]
+    [InlineData("SELECT a AS b", Dialect.Generic, TokenType.AS)]
+    [InlineData("SELECT a FROM t GROUP BY a", Dialect.Generic, TokenType.BY)]
+    [InlineData("SELECT CAST(a AS VARCHAR)", Dialect.Generic, TokenType.CAST)]
+    public void TestMultiWordTokenTypes(string sql, Dialect dialect, TokenType expected)
+    {
+        var tokens = Polyglot.Tokenize(sql, dialect);
+        foreach (var t in tokens)
+            Console.WriteLine($"  Token: type={t.TokenType}, text='{t.Text}'");
+
+        Assert.Contains(tokens, t => t.TokenType == expected);
+        Assert.DoesNotContain(tokens, t => t.TokenType == TokenType.UNKNOWN);
+    }
+
     [Fact]
     public void TestCRLF()
     {
