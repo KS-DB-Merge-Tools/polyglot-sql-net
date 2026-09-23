@@ -7,6 +7,9 @@ namespace PolyglotSql.Models
         [JsonPropertyName("index")]
         public int Index { get; set; }
 
+        [JsonPropertyName("role")]
+        public SetOperationBranchRole Role { get; set; }
+
         [JsonPropertyName("projections")]
         public ProjectionFact[] Projections { get; set; }
     }

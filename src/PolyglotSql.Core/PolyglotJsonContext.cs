@@ -63,6 +63,13 @@ namespace PolyglotSql
     [JsonSerializable(typeof(BuildRequest))]
     [JsonSerializable(typeof(BuilderPlan))]
     [JsonSerializable(typeof(BuilderOutput))]
+    [JsonSerializable(typeof(SetBranch))]
+    [JsonSerializable(typeof(CteFact))]
+    [JsonSerializable(typeof(StarProjectionFact))]
+    [JsonSerializable(typeof(TransformFunctionFact))]
+    [JsonSerializable(typeof(ColumnUseFact))]
+    [JsonSerializable(typeof(ColumnUseReferenceFact))]
+    [JsonSerializable(typeof(QuerySourceSpan))]
     public partial class PolyglotJsonContext : JsonSerializerContext
     {
     }

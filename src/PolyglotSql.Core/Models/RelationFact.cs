@@ -16,5 +16,17 @@ namespace PolyglotSql.Models
 
         [JsonPropertyName("columns")]
         public string[] Columns { get; set; }
+
+        [JsonPropertyName("catalog")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Catalog { get; set; }
+
+        [JsonPropertyName("schema")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Schema { get; set; }
+
+        [JsonPropertyName("table")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Table { get; set; }
     }
 }
