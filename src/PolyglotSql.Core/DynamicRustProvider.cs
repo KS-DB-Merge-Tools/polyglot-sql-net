@@ -103,6 +103,36 @@ namespace PolyglotSql
         private delegate PolyglotValidationResult PolyglotValidateDelegate(IntPtr sql, IntPtr dialect);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotParseWithOptionsDelegate(IntPtr sql, IntPtr dialect, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotValidationResult PolyglotValidateWithOptionsDelegate(IntPtr sql, IntPtr dialect, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotValidationResult PolyglotValidateWithSchemaDelegate(IntPtr sql, IntPtr schemaJson, IntPtr dialect, IntPtr optionsJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotLineageAtDelegate(UIntPtr ordinal, IntPtr sql, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotLineageAtWithSchemaDelegate(UIntPtr ordinal, IntPtr sql, IntPtr schemaJson, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotOutputColumnsDelegate(IntPtr sql, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotOutputColumnsWithSchemaDelegate(IntPtr sql, IntPtr schemaJson, IntPtr dialect);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotSetLimitDelegate(IntPtr astJson, ulong value);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotSetOrderByDelegate(IntPtr astJson, IntPtr orderByJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate PolyglotResult PolyglotBuildDelegate(IntPtr requestJson);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr PolyglotDialectListDelegate();
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -143,6 +173,19 @@ namespace PolyglotSql
         private PolyglotGenerateDelegate _generate;
         private PolyglotAnalyzeQueryDelegate _analyzeQuery;
         private PolyglotValidateDelegate _validate;
+        private PolyglotParseWithOptionsDelegate _parseWithOptions;
+        private PolyglotParseWithOptionsDelegate _parseOneWithOptions;
+        private PolyglotParseWithOptionsDelegate _parseDataTypeWithOptions;
+        private PolyglotValidateWithOptionsDelegate _validateWithOptions;
+        private PolyglotValidateWithSchemaDelegate _validateWithSchema;
+        private PolyglotLineageAtDelegate _lineageAt;
+        private PolyglotLineageAtWithSchemaDelegate _lineageAtWithSchema;
+        private PolyglotOutputColumnsDelegate _outputColumns;
+        private PolyglotOutputColumnsWithSchemaDelegate _outputColumnsWithSchema;
+        private PolyglotSetLimitDelegate _setLimit;
+        private PolyglotSetLimitDelegate _setOffset;
+        private PolyglotSetOrderByDelegate _setOrderBy;
+        private PolyglotBuildDelegate _build;
         private PolyglotDialectListDelegate _dialectList;
         private PolyglotDialectCountDelegate _dialectCount;
         private PolyglotVersionDelegate _version;
@@ -177,6 +220,19 @@ namespace PolyglotSql
             _generate = LoadDelegate<PolyglotGenerateDelegate>("polyglot_generate");
             _analyzeQuery = LoadDelegate<PolyglotAnalyzeQueryDelegate>("polyglot_analyze_query");
             _validate = LoadDelegate<PolyglotValidateDelegate>("polyglot_validate");
+            _parseWithOptions = LoadDelegate<PolyglotParseWithOptionsDelegate>("polyglot_parse_with_options");
+            _parseOneWithOptions = LoadDelegate<PolyglotParseWithOptionsDelegate>("polyglot_parse_one_with_options");
+            _parseDataTypeWithOptions = LoadDelegate<PolyglotParseWithOptionsDelegate>("polyglot_parse_data_type_with_options");
+            _validateWithOptions = LoadDelegate<PolyglotValidateWithOptionsDelegate>("polyglot_validate_with_options");
+            _validateWithSchema = LoadDelegate<PolyglotValidateWithSchemaDelegate>("polyglot_validate_with_schema");
+            _lineageAt = LoadDelegate<PolyglotLineageAtDelegate>("polyglot_lineage_at");
+            _lineageAtWithSchema = LoadDelegate<PolyglotLineageAtWithSchemaDelegate>("polyglot_lineage_at_with_schema");
+            _outputColumns = LoadDelegate<PolyglotOutputColumnsDelegate>("polyglot_output_columns");
+            _outputColumnsWithSchema = LoadDelegate<PolyglotOutputColumnsWithSchemaDelegate>("polyglot_output_columns_with_schema");
+            _setLimit = LoadDelegate<PolyglotSetLimitDelegate>("polyglot_set_limit");
+            _setOffset = LoadDelegate<PolyglotSetLimitDelegate>("polyglot_set_offset");
+            _setOrderBy = LoadDelegate<PolyglotSetOrderByDelegate>("polyglot_set_order_by");
+            _build = LoadDelegate<PolyglotBuildDelegate>("polyglot_build");
             _dialectList = LoadDelegate<PolyglotDialectListDelegate>("polyglot_dialect_list");
             _dialectCount = LoadDelegate<PolyglotDialectCountDelegate>("polyglot_dialect_count");
             _version = LoadDelegate<PolyglotVersionDelegate>("polyglot_version");
@@ -314,6 +370,110 @@ namespace PolyglotSql
         public ValidationResult Validate(string sql, Dialect dialect = Dialect.Generic)
         {
             return CallNativeValidate(_validate, sql, dialect.ToString().ToLowerInvariant());
+        }
+
+        public Expression[] ParseWithOptions(string sql, Dialect dialect = Dialect.Generic, ParseOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new ParseOptions(), PolyglotJsonContext.Default.ParseOptions);
+            return HandleResultParseArray(CallNativeWithOptions(_parseWithOptions, sql, dialect.ToString().ToLowerInvariant(), optionsJson));
+        }
+
+        public Expression ParseOneWithOptions(string sql, Dialect dialect = Dialect.Generic, ParseOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new ParseOptions(), PolyglotJsonContext.Default.ParseOptions);
+            return HandleResultParseOne(CallNativeWithOptions(_parseOneWithOptions, sql, dialect.ToString().ToLowerInvariant(), optionsJson));
+        }
+
+        public DataType ParseDataTypeWithOptions(string sql, Dialect dialect = Dialect.Generic, ParseOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new ParseOptions(), PolyglotJsonContext.Default.ParseOptions);
+            string json = HandleResult(CallNativeWithOptions(_parseDataTypeWithOptions, sql, dialect.ToString().ToLowerInvariant(), optionsJson));
+            return JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.DataType);
+        }
+
+        public ValidationResult ValidateWithOptions(string sql, Dialect dialect = Dialect.Generic, ValidationOptions options = null)
+        {
+            string optionsJson = JsonSerializer.Serialize(options ?? new ValidationOptions(), PolyglotJsonContext.Default.ValidationOptions);
+            return CallNativeValidateWithOptions(_validateWithOptions, sql, dialect.ToString().ToLowerInvariant(), optionsJson);
+        }
+
+        public ValidationResult ValidateWithSchema(string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic, SchemaValidationOptions options = null)
+        {
+            string schemaJson = JsonSerializer.Serialize(schema ?? new ValidationSchema(), PolyglotJsonContext.Default.ValidationSchema);
+            string optionsJson = JsonSerializer.Serialize(options ?? new SchemaValidationOptions(), PolyglotJsonContext.Default.SchemaValidationOptions);
+            return CallNativeValidateWithSchema(_validateWithSchema, sql, schemaJson, dialect.ToString().ToLowerInvariant(), optionsJson);
+        }
+
+        public LineageNode LineageAt(int ordinal, string sql, Dialect dialect = Dialect.Generic)
+        {
+            if (ordinal < 0)
+                throw new ArgumentOutOfRangeException(nameof(ordinal), "Ordinal must be zero or positive.");
+
+            string json = CallNativeLineageAt(_lineageAt, ordinal, sql, dialect.ToString().ToLowerInvariant());
+            return LineageParser.Parse(json);
+        }
+
+        public LineageNode LineageAtWithSchema(int ordinal, string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic)
+        {
+            if (ordinal < 0)
+                throw new ArgumentOutOfRangeException(nameof(ordinal), "Ordinal must be zero or positive.");
+
+            string schemaJson = JsonSerializer.Serialize(schema ?? new ValidationSchema(), PolyglotJsonContext.Default.ValidationSchema);
+            string json = CallNativeLineageAtWithSchema(_lineageAtWithSchema, ordinal, sql, schemaJson, dialect.ToString().ToLowerInvariant());
+            return LineageParser.Parse(json);
+        }
+
+        public QueryOutput OutputColumns(string sql, Dialect dialect = Dialect.Generic)
+        {
+            return CallNativeOutputColumns(_outputColumns, sql, dialect.ToString().ToLowerInvariant());
+        }
+
+        public QueryOutput OutputColumnsWithSchema(string sql, ValidationSchema schema, Dialect dialect = Dialect.Generic)
+        {
+            string schemaJson = JsonSerializer.Serialize(schema ?? new ValidationSchema(), PolyglotJsonContext.Default.ValidationSchema);
+            return CallNativeOutputColumnsWithSchema(_outputColumnsWithSchema, sql, schemaJson, dialect.ToString().ToLowerInvariant());
+        }
+
+        public Expression[] SetLimit(Expression[] ast, ulong limit)
+        {
+            string astJson = JsonSerializer.Serialize(ast, PolyglotJsonContext.Default.ExpressionArray);
+            return CallNativeSetLimit(_setLimit, astJson, limit);
+        }
+
+        public Expression[] SetOffset(Expression[] ast, ulong offset)
+        {
+            string astJson = JsonSerializer.Serialize(ast, PolyglotJsonContext.Default.ExpressionArray);
+            return CallNativeSetLimit(_setOffset, astJson, offset);
+        }
+
+        public Expression[] SetOrderBy(Expression[] ast, Expression[] orderBy)
+        {
+            string astJson = JsonSerializer.Serialize(ast, PolyglotJsonContext.Default.ExpressionArray);
+            string orderByJson = JsonSerializer.Serialize(orderBy ?? Array.Empty<Expression>(), PolyglotJsonContext.Default.ExpressionArray);
+            return CallNativeSetOrderBy(_setOrderBy, astJson, orderByJson);
+        }
+
+        public Expression BuildAst(BuilderPlan plan, Dialect readDialect = Dialect.Generic)
+        {
+            var request = new BuildRequest
+            {
+                ReadDialect = readDialect,
+                Plan = plan ?? throw new ArgumentNullException(nameof(plan)),
+                Output = new BuilderOutput.Ast(),
+            };
+            return HandleResultParseOne(CallNativeBuild(_build, request));
+        }
+
+        public string BuildSql(BuilderPlan plan, Dialect readDialect = Dialect.Generic, Dialect outputDialect = Dialect.Generic)
+        {
+            var request = new BuildRequest
+            {
+                ReadDialect = readDialect,
+                Plan = plan ?? throw new ArgumentNullException(nameof(plan)),
+                Output = new BuilderOutput.Sql { Dialect = outputDialect },
+            };
+            // SQL output is returned as a plain string, not JSON
+            return HandleResult(CallNativeBuild(_build, request));
         }
 
         public string[] DialectList()
@@ -762,6 +922,173 @@ namespace PolyglotSql
             {
                 Marshal.FreeHGlobal(sqlPtr);
                 Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private PolyglotResult CallNativeWithOptions(PolyglotParseWithOptionsDelegate del, string sql, string dialect, string optionsJson)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(optionsJson);
+            try
+            {
+                return del(sqlPtr, dialectPtr, optPtr);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private ValidationResult CallNativeValidateWithOptions(PolyglotValidateWithOptionsDelegate del, string sql, string dialect, string optionsJson)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(optionsJson);
+            try
+            {
+                var result = del(sqlPtr, dialectPtr, optPtr);
+                return HandleResultValidation(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private ValidationResult CallNativeValidateWithSchema(PolyglotValidateWithSchemaDelegate del, string sql, string schemaJson, string dialect, string optionsJson)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr schemaPtr = Marshal.StringToHGlobalAnsi(schemaJson);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            IntPtr optPtr = Marshal.StringToHGlobalAnsi(optionsJson);
+            try
+            {
+                var result = del(sqlPtr, schemaPtr, dialectPtr, optPtr);
+                return HandleResultValidation(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(schemaPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+                Marshal.FreeHGlobal(optPtr);
+            }
+        }
+
+        private string CallNativeLineageAt(PolyglotLineageAtDelegate del, int ordinal, string sql, string dialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(new UIntPtr((uint)ordinal), sqlPtr, dialectPtr);
+                return HandleResult(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private string CallNativeLineageAtWithSchema(PolyglotLineageAtWithSchemaDelegate del, int ordinal, string sql, string schemaJson, string dialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr schemaPtr = Marshal.StringToHGlobalAnsi(schemaJson);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(new UIntPtr((uint)ordinal), sqlPtr, schemaPtr, dialectPtr);
+                return HandleResult(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(schemaPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private QueryOutput CallNativeOutputColumns(PolyglotOutputColumnsDelegate del, string sql, string dialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(sqlPtr, dialectPtr);
+                return HandleResultOpenLineage(result, PolyglotJsonContext.Default.QueryOutput);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private QueryOutput CallNativeOutputColumnsWithSchema(PolyglotOutputColumnsWithSchemaDelegate del, string sql, string schemaJson, string dialect)
+        {
+            IntPtr sqlPtr = Marshal.StringToHGlobalAnsi(sql);
+            IntPtr schemaPtr = Marshal.StringToHGlobalAnsi(schemaJson);
+            IntPtr dialectPtr = Marshal.StringToHGlobalAnsi(dialect);
+            try
+            {
+                var result = del(sqlPtr, schemaPtr, dialectPtr);
+                return HandleResultOpenLineage(result, PolyglotJsonContext.Default.QueryOutput);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sqlPtr);
+                Marshal.FreeHGlobal(schemaPtr);
+                Marshal.FreeHGlobal(dialectPtr);
+            }
+        }
+
+        private Expression[] CallNativeSetLimit(PolyglotSetLimitDelegate del, string astJson, ulong value)
+        {
+            IntPtr astPtr = Marshal.StringToHGlobalAnsi(astJson);
+            try
+            {
+                var result = del(astPtr, value);
+                return HandleResultExpressionArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(astPtr);
+            }
+        }
+
+        private Expression[] CallNativeSetOrderBy(PolyglotSetOrderByDelegate del, string astJson, string orderByJson)
+        {
+            IntPtr astPtr = Marshal.StringToHGlobalAnsi(astJson);
+            IntPtr orderByPtr = Marshal.StringToHGlobalAnsi(orderByJson);
+            try
+            {
+                var result = del(astPtr, orderByPtr);
+                return HandleResultExpressionArray(result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(astPtr);
+                Marshal.FreeHGlobal(orderByPtr);
+            }
+        }
+
+        private PolyglotResult CallNativeBuild(PolyglotBuildDelegate del, BuildRequest request)
+        {
+            string requestJson = JsonSerializer.Serialize(request, PolyglotJsonContext.Default.BuildRequest);
+            IntPtr requestPtr = Marshal.StringToHGlobalAnsi(requestJson);
+            try
+            {
+                return del(requestPtr);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(requestPtr);
             }
         }
 

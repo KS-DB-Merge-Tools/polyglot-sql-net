@@ -10,8 +10,13 @@ namespace PolyglotSql.Models
     [JsonDerivedType(typeof(TinyInt), "tiny_int")]
     [JsonDerivedType(typeof(SmallInt), "small_int")]
     [JsonDerivedType(typeof(Int), "int")]
-    [JsonDerivedType(typeof(UInt), "u_int")]
     [JsonDerivedType(typeof(BigInt), "big_int")]
+    [JsonDerivedType(typeof(Int128Type), "int128")]
+    [JsonDerivedType(typeof(UInt8Type), "uint8")]
+    [JsonDerivedType(typeof(UInt16Type), "uint16")]
+    [JsonDerivedType(typeof(UInt32Type), "uint32")]
+    [JsonDerivedType(typeof(UInt64Type), "uint64")]
+    [JsonDerivedType(typeof(UInt128Type), "uint128")]
     [JsonDerivedType(typeof(Float), "float")]
     [JsonDerivedType(typeof(Double), "double")]
     [JsonDerivedType(typeof(Decimal), "decimal")]
@@ -81,19 +86,31 @@ namespace PolyglotSql.Models
             public bool IntegerSpelling { get; set; }
         }
 
-        public sealed record UInt : DataType
-        {
-            [JsonPropertyName("length")]
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-            public uint? Length { get; set; }
-        }
-
         public sealed record BigInt : DataType
         {
             [JsonPropertyName("length")]
             [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public uint? Length { get; set; }
         }
+
+        // Signed 128-bit integer (DuckDB HUGEINT, ClickHouse Int128, StarRocks LARGEINT).
+        // "Type" suffix avoids conflicts with System.Int128 / System.UInt* (as with StringType)
+        public sealed record Int128Type : DataType;
+
+        // Unsigned 8-bit integer (DuckDB UTINYINT, ClickHouse UInt8).
+        public sealed record UInt8Type : DataType;
+
+        // Unsigned 16-bit integer (DuckDB USMALLINT, ClickHouse UInt16).
+        public sealed record UInt16Type : DataType;
+
+        // Unsigned 32-bit integer (DuckDB UINTEGER, ClickHouse UInt32).
+        public sealed record UInt32Type : DataType;
+
+        // Unsigned 64-bit integer (DuckDB UBIGINT, ClickHouse UInt64).
+        public sealed record UInt64Type : DataType;
+
+        // Unsigned 128-bit integer (DuckDB UHUGEINT, ClickHouse UInt128).
+        public sealed record UInt128Type : DataType;
 
         public sealed record Float : DataType
         {
@@ -568,6 +585,14 @@ namespace PolyglotSql.Models
         public string Name { get; set; }
         [JsonPropertyName("data_type")]
         public DataType Type { get; set; }
+        // OPTIONS(...) clause (BigQuery)
+        [JsonPropertyName("options")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<Expression> Options { get; set; }
+        // COMMENT (Spark/Databricks)
+        [JsonPropertyName("comment")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Comment { get; set; }
     }
 
     public class UnionField

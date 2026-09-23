@@ -12,5 +12,9 @@ namespace PolyglotSql.Models
 
         [JsonPropertyName("maxUnsupported")]
         public int MaxUnsupported { get; set; }
+
+        [JsonPropertyName("complexityGuard")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ComplexityGuardOptions ComplexityGuard { get; set; }
     }
 }

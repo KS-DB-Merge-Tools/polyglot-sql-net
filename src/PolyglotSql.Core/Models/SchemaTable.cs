@@ -26,5 +26,9 @@ namespace PolyglotSql.Models
         [JsonPropertyName("uniqueKeys")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<List<string>> UniqueKeys { get; set; }
+
+        [JsonPropertyName("foreignKeys")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<SchemaForeignKey> ForeignKeys { get; set; }
     }
 }

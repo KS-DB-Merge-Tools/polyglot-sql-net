@@ -8,7 +8,19 @@ All notable changes to this project will be documented in this file.
  
 ### Added
 
+- New methods from Polyglot v0.12.1: `ParseWithOptions`, `ParseOneWithOptions`, `ParseDataTypeWithOptions`, `ValidateWithOptions`, `ValidateWithSchema`, `LineageAt`, `LineageAtWithSchema`, `OutputColumns`, `OutputColumnsWithSchema`, `SetLimit`, `SetOffset`, `SetOrderBy`, `BuildAst`, `BuildSql`
+- New models: `ComplexityGuardOptions`, `ParseOptions`, `ValidationOptions`, `SchemaValidationOptions`, `SchemaForeignKey`, `SchemaTableReference`, `SchemaColumnReference`, `QueryOutput`, `OutputColumn`, `BuildRequest`, `BuilderOutput`, `BuilderPlan` (thin JSON wrapper, like `Expression`)
+- `ComplexityGuard` property in `TranspileOptions` and `AnalyzeQueryOptions`
+- `SchemaTable.ForeignKeys`, `SchemaColumn.References`
+- `StructField.Options` and `StructField.Comment`
+- Data types `Int128Type`, `UInt8Type`, `UInt16Type`, `UInt32Type`, `UInt64Type`, `UInt128Type`
+- API drift scripts
+
 ### Changed
+
+- Update Polyglot to v0.12.1
+- Breaking change: removed `DataType.UInt` (`u_int`) - has no native counterpart, use the new unsigned integer types
+- Breaking change: removed `SourceKind` members `subquery`, `view`, `lateral`, `unnest` - have no native counterpart
  
 ### Fixed
 
