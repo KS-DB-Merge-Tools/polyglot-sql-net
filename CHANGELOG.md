@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
  
 ### Added
 
+### Changed
+ 
+### Fixed
+
+
+## [0.4.0] - 2026-09-23
+ 
+### Added
+
 - New methods from Polyglot v0.12.1: `ParseWithOptions`, `ParseOneWithOptions`, `ParseDataTypeWithOptions`, `ValidateWithOptions`, `ValidateWithSchema`, `LineageAt`, `LineageAtWithSchema`, `OutputColumns`, `OutputColumnsWithSchema`, `SetLimit`, `SetOffset`, `SetOrderBy`, `BuildAst`, `BuildSql`
 - New models: `ComplexityGuardOptions`, `ParseOptions`, `ValidationOptions`, `SchemaValidationOptions`, `SchemaForeignKey`, `SchemaTableReference`, `SchemaColumnReference`, `QueryOutput`, `OutputColumn`, `BuildRequest`, `BuilderOutput`, `BuilderPlan` (thin JSON wrapper, like `Expression`)
 - `ComplexityGuard` property in `TranspileOptions` and `AnalyzeQueryOptions`
