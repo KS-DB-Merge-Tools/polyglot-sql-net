@@ -270,8 +270,8 @@ namespace PolyglotSql.Models
         {
             [JsonPropertyName("fields")]
             public List<StructField> Fields { get; set; }
+            // Required by native (no serde default), so false must be written too
             [JsonPropertyName("nested")]
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
             public bool Nested { get; set; }
         }
 

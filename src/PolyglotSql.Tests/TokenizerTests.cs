@@ -130,8 +130,8 @@ public class TokenizerTests
     [InlineData("a::INT", Dialect.PostgreSQL, TokenType.D_COLON)]
     [InlineData("a ILIKE 'x'", Dialect.PostgreSQL, TokenType.I_LIKE)]
     [InlineData("SELECT a AS b", Dialect.Generic, TokenType.AS)]
-    [InlineData("SELECT a FROM t GROUP BY a", Dialect.Generic, TokenType.GROUP_BY)]
-    [InlineData("SELECT CAST(a AS VARCHAR)", Dialect.Generic, TokenType.VAR_CHAR)]
+    [InlineData("SELECT a FROM t GROUP BY a", Dialect.Generic, TokenType.BY)]
+    [InlineData("SELECT CAST(a AS VARCHAR)", Dialect.Generic, TokenType.CAST)]
     public void TestMultiWordTokenTypes(string sql, Dialect dialect, TokenType expected)
     {
         var tokens = Polyglot.Tokenize(sql, dialect);

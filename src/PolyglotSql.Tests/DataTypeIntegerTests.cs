@@ -41,18 +41,19 @@ public class DataTypeIntegerParseTests
     }
 
     [Theory]
-    [InlineData("HUGEINT", typeof(DataType.Int128Type))]
-    [InlineData("UTINYINT", typeof(DataType.UInt8Type))]
-    [InlineData("USMALLINT", typeof(DataType.UInt16Type))]
-    [InlineData("UINTEGER", typeof(DataType.UInt32Type))]
-    [InlineData("UBIGINT", typeof(DataType.UInt64Type))]
-    [InlineData("UHUGEINT", typeof(DataType.UInt128Type))]
-    public void TestParseDuckDB(string sql, Type type)
+    // native generates HUGEINT/UHUGEINT back as their INT128/UINT128 aliases
+    [InlineData("HUGEINT", typeof(DataType.Int128Type), "INT128")]
+    [InlineData("UTINYINT", typeof(DataType.UInt8Type), "UTINYINT")]
+    [InlineData("USMALLINT", typeof(DataType.UInt16Type), "USMALLINT")]
+    [InlineData("UINTEGER", typeof(DataType.UInt32Type), "UINTEGER")]
+    [InlineData("UBIGINT", typeof(DataType.UInt64Type), "UBIGINT")]
+    [InlineData("UHUGEINT", typeof(DataType.UInt128Type), "UINT128")]
+    public void TestParseDuckDB(string sql, Type type, string generated)
     {
         var dataType = Polyglot.ParseDataType(sql, Dialect.DuckDB);
 
         Assert.IsType(type, dataType);
-        Assert.Equal(sql, Polyglot.GenerateDataType(dataType, Dialect.DuckDB));
+        Assert.Equal(generated, Polyglot.GenerateDataType(dataType, Dialect.DuckDB));
     }
 
     [Theory]

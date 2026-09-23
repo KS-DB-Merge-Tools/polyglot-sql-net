@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file.
 
 - `Tokenize` returned `TokenType.UNKNOWN` for multi-word token types (e.g. `D_COLON`) and for token types missing in the .NET enum (e.g. `AS`)
 - `TokenType.GROUPING_SETS` had the same numeric value as `TokenType.GROUP_BY`
+- `GenerateDataType` failed with "missing field `nested`" for `STRUCT<...>` types (`DataType.StructType.Nested` was omitted from JSON when `false`)
 
 
 ## [0.3.0] - 2026-08-18

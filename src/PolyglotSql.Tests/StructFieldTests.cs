@@ -44,7 +44,7 @@ public class StructFieldTests
     [Fact]
     public void TestStructTypeRoundTrip()
     {
-        string json = "{\"data_type\":\"struct\",\"fields\":[{\"name\":\"a\",\"data_type\":{\"data_type\":\"int\"},\"comment\":\"c\"}]}";
+        string json = "{\"data_type\":\"struct\",\"fields\":[{\"name\":\"a\",\"data_type\":{\"data_type\":\"int\"},\"comment\":\"c\"}],\"nested\":false}";
         var structType = Assert.IsType<DataType.StructType>(JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.DataType));
 
         Assert.Equal("c", Assert.Single(structType.Fields).Comment);
