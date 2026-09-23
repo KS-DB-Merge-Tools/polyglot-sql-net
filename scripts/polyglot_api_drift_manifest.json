@@ -199,6 +199,122 @@
       "dotnet_type": "StructField",
       "kind": "options",
       "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
+    },
+    "LineageNode": {
+      "dotnet_type": "LineageNode",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/LineageResult.cs",
+      "notes": "Result of polyglot_lineage* functions. Filled by LineageParser; property JSON keys come from [JsonPropertyName]."
+    },
+    "QueryAnalysis": {
+      "dotnet_type": "QueryAnalysis",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/QueryAnalysis.cs",
+      "notes": "Result of polyglot_analyze_query."
+    },
+    "ProjectionFact": {
+      "dotnet_type": "ProjectionFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ProjectionFact.cs"
+    },
+    "ColumnReferenceFact": {
+      "dotnet_type": "ColumnReferenceFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnReferenceFact.cs"
+    },
+    "RelationFact": {
+      "dotnet_type": "RelationFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/RelationFact.cs"
+    },
+    "SetOperationFact": {
+      "dotnet_type": "SetOperationFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperationFact.cs"
+    },
+    "SetOperationBranchFact": {
+      "dotnet_type": "SetOperationBranchFact",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/SetOperationBranchFact.cs"
+    },
+    "OpenLineageColumnLineageResult": {
+      "dotnet_type": "OpenLineageColumnLineageResult",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageColumnLineageResult.cs",
+      "notes": "Result of polyglot_openlineage_column_lineage."
+    },
+    "OpenLineageEventResult": {
+      "dotnet_type": "OpenLineageEventResult",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageEventResult.cs",
+      "notes": "Result of polyglot_openlineage_job_event / polyglot_openlineage_run_event."
+    },
+    "OpenLineageDataset": {
+      "dotnet_type": "OpenLineageDataset",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageDataset.cs"
+    },
+    "ColumnLineageDatasetFacet": {
+      "dotnet_type": "ColumnLineageDatasetFacet",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnLineageDatasetFacet.cs"
+    },
+    "ColumnLineageField": {
+      "dotnet_type": "ColumnLineageField",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ColumnLineageField.cs"
+    },
+    "OpenLineageInputField": {
+      "dotnet_type": "OpenLineageInputField",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageInputField.cs"
+    },
+    "OpenLineageTransformation": {
+      "dotnet_type": "OpenLineageTransformation",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageTransformation.cs"
+    },
+    "OpenLineageWarning": {
+      "dotnet_type": "OpenLineageWarning",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/OpenLineageWarning.cs"
+    },
+    "Token": {
+      "dotnet_type": "Token",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/Token.cs",
+      "notes": "Result of polyglot_tokenize."
+    },
+    "Span": {
+      "dotnet_type": "Span",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/Span.cs"
+    },
+    "TokenType": {
+      "dotnet_type": "TokenType",
+      "kind": "enum",
+      "dotnet_file": "PolyglotSql.Core/Models/TokenType.cs"
+    },
+    "ValidationError": {
+      "dotnet_type": "ValidationError",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ValidationError.cs",
+      "notes": "Element of errors_json returned by polyglot_validate*."
+    },
+    "ValidationResult": {
+      "dotnet_type": "ValidationResult",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/ValidationResult.cs",
+      "notes": "FFI returns valid + errors_json in a C struct; .NET assembles the same shape as the core Rust ValidationResult."
     }
+  },
+  "dotnet_only_types": {
+    "DiffResult": "Wrapper built by DiffParser around the Vec<Edit> returned by polyglot_diff (edits + per-type counts). The Rust Edit variants are compared via the DiffEditType entry.",
+    "DiffEdit": "Flattened form of the Rust Edit tagged union (type + expression/source/target), built by DiffParser.",
+    "DiffParser": "Hand-written parser for polyglot_diff output, not a model.",
+    "LineageParser": "Hand-written parser for polyglot_lineage* output, not a model.",
+    "UnionField": "Element of DataType::Union fields, serialized by UnionFieldConverter as a Rust (name, DataType) tuple.",
+    "ObjectField": "Element of DataType::Object fields, serialized by ObjectFieldConverter as a Rust (name, DataType, not_null) tuple.",
+    "VersionInfo": "Wrapper/native version info assembled on the .NET side (Polyglot.VersionInfo)."
   }
 }

@@ -40,6 +40,7 @@ PRIMITIVE_RUST_TYPES = {
     "u8", "u16", "u32", "u64", "u128", "usize",
     "i8", "i16", "i32", "i64", "i128", "isize",
     "f32", "f64",
+    "Value",  # serde_json::Value - arbitrary JSON
 }
 CONTAINER_RUST_TYPES = {
     "Option", "Vec", "HashMap", "BTreeMap", "HashSet", "BTreeSet", "Box", "Arc", "Rc",
@@ -60,6 +61,7 @@ RUST_TO_CS_PRIMITIVES = {
     "i64": {"long"},
     "f32": {"float"},
     "f64": {"double"},
+    "Value": {"JsonElement", "JsonNode", "JsonObject", "object"},
 }
 CS_CONTAINER_NAMES = {"List", "IReadOnlyList", "IEnumerable", "ICollection", "Dictionary", "IReadOnlyDictionary"}
 
@@ -716,6 +718,56 @@ def load_manifest(path: Path) -> dict:
     return data.get("types", {})
 
 
+def load_dotnet_only_types(path: Path) -> dict:
+    """.NET model types that intentionally have no Rust counterpart: {type name: reason}."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data.get("dotnet_only_types", {})
+
+
+# Namespace-level (4-space indented) type declarations; nested types (e.g. DataType
+# variants) are covered through their parent's manifest entry.
+DOTNET_MODEL_TYPE_RE = re.compile(
+    r"^    public\s+(?:(?:abstract|sealed|static|partial)\s+)*(?:record|class|enum)\s+(\w+)([^\n{]*)",
+    re.MULTILINE,
+)
+
+
+def find_dotnet_model_types(dotnet_root: Path) -> dict:
+    """All top-level model types in PolyglotSql.Core/Models: {type name: relative file}.
+    JsonConverter implementations are serialization plumbing, not models, so they're skipped."""
+    models_dir = dotnet_root / "PolyglotSql.Core" / "Models"
+    types = {}
+    if not models_dir.is_dir():
+        return types
+    for path in sorted(models_dir.glob("*.cs")):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for m in DOTNET_MODEL_TYPE_RE.finditer(text):
+            if "JsonConverter<" in m.group(2):
+                continue
+            types[m.group(1)] = str(path.relative_to(dotnet_root)).replace("\\", "/")
+    return types
+
+
+def diff_dotnet_model_coverage(model_types: dict, manifest: dict, dotnet_only_types: dict) -> list:
+    """Every .NET model must be either mapped in the manifest or declared .NET-only;
+    otherwise its drift against Rust is silently never checked."""
+    findings = []
+    mapped = {entry["dotnet_type"] for entry in manifest.values() if entry.get("dotnet_type")}
+    for name, file in sorted(model_types.items()):
+        if name not in mapped and name not in dotnet_only_types:
+            findings.append(Finding(
+                category="untracked_dotnet_type", severity="warning", rust_name=name, dotnet_name=name,
+                message=f".NET model '{name}' ({file}) is neither mapped in the manifest nor listed in "
+                        f"dotnet_only_types - its drift against Rust is not checked.",
+            ))
+    for name in sorted(set(dotnet_only_types) - set(model_types)):
+        findings.append(Finding(
+            category="untracked_dotnet_type", severity="info", rust_name=name, dotnet_name=name,
+            message=f"dotnet_only_types lists '{name}', but no such .NET model exists anymore - remove the entry.",
+        ))
+    return findings
+
+
 # --------------------------------------------------------------------------- #
 # Diff engine
 # --------------------------------------------------------------------------- #
@@ -1003,7 +1055,11 @@ def run(rust_root: Path, dotnet_root: Path, manifest_path: Path):
                 ))
             findings.extend(diff_tagged_union(parsed, dotnet_type, dotnet_type_name))
 
-    # --- 4. Surface Rust types referenced from FFI calls or mapped-type fields that
+    # --- 4. .NET models that nobody maps (typically result types, which step 2 can't discover) ---
+    findings.extend(diff_dotnet_model_coverage(
+        find_dotnet_model_types(dotnet_root), manifest, load_dotnet_only_types(manifest_path)))
+
+    # --- 5. Surface Rust types referenced from FFI calls or mapped-type fields that
     #         aren't in the manifest at all ---
     all_discovered = discovered_options_types | referenced_type_names
     unmapped = sorted(n for n in all_discovered if n not in manifest and n[:1].isupper())
@@ -1040,6 +1096,10 @@ Limitations of this tool (regex/brace-based parsing, not a real Rust/C# parser):
   - Manifest coverage is opt-in and hand-maintained (see polyglot_api_drift_manifest.json).
     Only types reachable from an FFI options parameter, or referenced by a field of
     an already-mapped type, are eligible for the automatic "unmapped type" check.
+    Result types are covered from the .NET side instead: every top-level model in
+    PolyglotSql.Core/Models must be mapped or listed in dotnet_only_types.
+  - .NET properties are read from [JsonPropertyName] attributes only; a model filled
+    by hand-written parsing code must still carry them to be compared.
 """
 
 
@@ -1068,6 +1128,7 @@ def render_report(findings: list, stats: dict, rust_root: Path, dotnet_root: Pat
                                 "dotnet_type_missing", "rust_type_missing", "manifest_kind_mismatch"}),
         ("Not Yet Implemented in .NET", {"unimplemented"}),
         ("Unmapped Rust Types", {"unmapped_type"}),
+        ("Untracked .NET Models", {"untracked_dotnet_type"}),
     ]
     for title, categories in sections:
         section_findings = sorted(
