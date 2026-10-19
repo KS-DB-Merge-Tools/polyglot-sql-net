@@ -200,7 +200,17 @@ public class DataTypeTests
     [InlineData("BLOB", Dialect.Generic)]
     [InlineData("DATE", Dialect.Generic)]
     [InlineData("TIMESTAMP", Dialect.Generic)]
-    
+
+    // HANA types
+    [InlineData("NVARCHAR(100)", Dialect.HANA)]
+    [InlineData("ALPHANUM(10)", Dialect.HANA)]
+    [InlineData("SECONDDATE", Dialect.HANA)]
+
+    // Vertica types
+    [InlineData("VARCHAR(255)", Dialect.Vertica)]
+    [InlineData("ARRAY[BIGINT]", Dialect.Vertica)]  // Vertica INT is 64-bit, generates as BIGINT
+    [InlineData("LONG VARBINARY(100)", Dialect.Vertica)]
+
     public void ParseAndGenBackToItself(string input, Dialect dialect)
     {
         string actual = Polyglot.TranspileDataType(input, dialect, dialect);

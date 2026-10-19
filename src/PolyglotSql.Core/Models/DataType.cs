@@ -49,6 +49,8 @@ namespace PolyglotSql.Models
     [JsonDerivedType(typeof(NullableType), "nullable")]
     [JsonDerivedType(typeof(CustomType), "custom")]
     [JsonDerivedType(typeof(Oracle), "oracle")]
+    [JsonDerivedType(typeof(Hana), "hana")]
+    [JsonDerivedType(typeof(Vertica), "vertica")]
     [JsonDerivedType(typeof(GeometryType), "geometry")]
     [JsonDerivedType(typeof(GeographyType), "geography")]
     [JsonDerivedType(typeof(CharacterSetType), "character_set")]
@@ -350,6 +352,24 @@ namespace PolyglotSql.Models
             public OracleDataType OracleType { get; set; }
         }
 
+        // HANA type whose domain or syntax is not represented by a common type.
+        // Mirrors the native Rust `DataType::Hana { hana_type }` variant, which
+        // serializes as {"data_type":"hana","hana_type":{"name":...,"parameters":[...]}}.
+        public sealed record Hana : DataType
+        {
+            [JsonPropertyName("hana_type")]
+            public HanaDataType HanaType { get; set; }
+        }
+
+        // Vertica-specific data types retained until the target dialect is known.
+        // Mirrors the native Rust `DataType::Vertica { vertica_type }` variant, which
+        // serializes as {"data_type":"vertica","vertica_type":{"kind":...}}.
+        public sealed record Vertica : DataType
+        {
+            [JsonPropertyName("vertica_type")]
+            public VerticaDataType VerticaType { get; set; }
+        }
+
         // Spatial types
         public sealed record GeometryType : DataType
         {
@@ -527,6 +547,104 @@ namespace PolyglotSql.Models
             None,
             WithTimeZone,
             WithLocalTimeZone,
+        }
+
+        // Source-specific HANA type (e.g. ALPHANUM(10), SECONDDATE). Mirrors the native
+        // Rust `HanaDataType` struct; both fields are required (no serde default).
+        public sealed record HanaDataType
+        {
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+            [JsonPropertyName("parameters")]
+            public List<uint> Parameters { get; set; } = new List<uint>();
+        }
+
+        // Vertica-specific data types. Mirrors the native Rust `VerticaDataType` enum,
+        // which serializes as {"kind":"<variant>",...}.
+        [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+        [JsonDerivedType(typeof(VerticaArray), "array")]
+        [JsonDerivedType(typeof(VerticaSet), "set")]
+        [JsonDerivedType(typeof(VerticaRow), "row")]
+        [JsonDerivedType(typeof(VerticaLongVarBinary), "long_var_binary")]
+        [JsonDerivedType(typeof(VerticaInterval), "interval")]
+        public abstract partial record VerticaDataType
+        {
+            protected VerticaDataType() { }
+        }
+
+        // Vertica ARRAY[element_type, bound] variant.
+        public sealed record VerticaArray : VerticaDataType
+        {
+            [JsonPropertyName("element_type")]
+            public DataType ElementType { get; set; }
+            [JsonPropertyName("bound")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public VerticaCollectionBound Bound { get; set; }
+        }
+
+        // Vertica SET[element_type, bound] variant.
+        public sealed record VerticaSet : VerticaDataType
+        {
+            [JsonPropertyName("element_type")]
+            public DataType ElementType { get; set; }
+            [JsonPropertyName("bound")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public VerticaCollectionBound Bound { get; set; }
+        }
+
+        // Vertica ROW(name type, ...) variant.
+        public sealed record VerticaRow : VerticaDataType
+        {
+            [JsonPropertyName("fields")]
+            public List<StructField> Fields { get; set; }
+        }
+
+        // Vertica LONG VARBINARY(length) variant.
+        public sealed record VerticaLongVarBinary : VerticaDataType
+        {
+            [JsonPropertyName("length")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Length { get; set; }
+        }
+
+        // Vertica INTERVAL / INTERVALYM variant.
+        public sealed record VerticaInterval : VerticaDataType
+        {
+            [JsonPropertyName("precision")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Precision { get; set; }
+            // Required by native (no serde default), so false must be written too
+            [JsonPropertyName("year_month")]
+            public bool YearMonth { get; set; }
+            [JsonPropertyName("unit")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public string Unit { get; set; }
+            [JsonPropertyName("end_unit")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public string EndUnit { get; set; }
+        }
+
+        // Vertica collection bound: either a max element count or a max byte size.
+        // Mirrors the native Rust adjacently tagged `VerticaCollectionBound` enum,
+        // which serializes as {"kind":"elements"|"bytes","value":n}.
+        [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+        [JsonDerivedType(typeof(VerticaBoundElements), "elements")]
+        [JsonDerivedType(typeof(VerticaBoundBytes), "bytes")]
+        public abstract partial record VerticaCollectionBound
+        {
+            protected VerticaCollectionBound() { }
+        }
+
+        public sealed record VerticaBoundElements : VerticaCollectionBound
+        {
+            [JsonPropertyName("value")]
+            public uint Value { get; set; }
+        }
+
+        public sealed record VerticaBoundBytes : VerticaCollectionBound
+        {
+            [JsonPropertyName("value")]
+            public uint Value { get; set; }
         }
     }
 

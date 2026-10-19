@@ -165,6 +165,23 @@
       "kind": "enum",
       "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
     },
+    "HanaDataType": {
+      "dotnet_type": "HanaDataType",
+      "kind": "options",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs"
+    },
+    "VerticaDataType": {
+      "dotnet_type": "VerticaDataType",
+      "kind": "tagged_union",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs",
+      "notes": "Nested tagged union. .NET derived class names are prefixed (e.g. Rust variant 'Array' -> C# 'VerticaArray') but matched by JSON discriminator string, not class name."
+    },
+    "VerticaCollectionBound": {
+      "dotnet_type": "VerticaCollectionBound",
+      "kind": "tagged_union",
+      "dotnet_file": "PolyglotSql.Core/Models/DataType.cs",
+      "notes": "Adjacently tagged in Rust (tag = \"kind\", content = \"value\"); each .NET derived record carries the tuple payload as a 'value' property."
+    },
     "OpenLineageDatasetId": {
       "dotnet_type": "OpenLineageDatasetId",
       "kind": "options",
