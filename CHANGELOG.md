@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
  
 - Update Polyglot to v0.13.3
+- New dialects HANA and Vertica, with new models for corresponding data types
 
 
 ## [0.4.0] - 2026-09-23
