@@ -36,5 +36,7 @@ namespace PolyglotSql.Models
         Dremio = 31,
         Exasol = 32,
         DataFusion = 33,
+        HANA = 34,
+        Vertica = 35,
     }
 }

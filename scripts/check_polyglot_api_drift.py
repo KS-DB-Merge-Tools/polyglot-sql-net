@@ -473,6 +473,10 @@ def parse_rust_struct(type_name: str, path: Path, text: str, def_start: int, sou
 def parse_rust_enum(type_name: str, path: Path, text: str, def_start: int, source_kind: str, rust_root: Path) -> RustEnum:
     attrs = extract_preceding_attrs(text, def_start)
     rename_all, tag = parse_container_attrs(attrs)
+    # Adjacently tagged enums (`tag = "kind", content = "value"`) put a tuple variant's
+    # payload under the content key, e.g. VerticaCollectionBound::Elements(5) ->
+    # {"kind":"elements","value":5}, so that payload is compared as a field of that name.
+    content = next((m.group(1) for m in (re.search(r'\bcontent\s*=\s*"([^"]+)"', a) for a in attrs) if m), None)
     brace_idx = text.index("{", def_start)
     body, _ = extract_braced_block(text, brace_idx)
     body = strip_doc_comments(body)
@@ -505,6 +509,10 @@ def parse_rust_enum(type_name: str, path: Path, text: str, def_start: int, sourc
             vfields = [f for f in (parse_field_chunk(c, rename_all) for c in split_top_level(vbody, ",")) if f]
         elif paren_pos != -1:
             vname = chunk_no_attrs[:paren_pos].strip()
+            inner = chunk_no_attrs[paren_pos + 1:chunk_no_attrs.rfind(")")].strip()
+            if content and inner and len(split_top_level(inner, ",")) == 1:
+                vfields = [RustField(name=content, json_key=content, rust_type=inner,
+                                     optional=bool(re.match(r"Option\s*<", inner)))]
         else:
             vname = chunk_no_attrs.strip()
         if not vname or not re.match(r"^\w+$", vname):
