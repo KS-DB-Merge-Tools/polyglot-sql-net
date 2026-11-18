@@ -15,7 +15,9 @@ public class QueryAnalysisModelTests
             ""index"": 0, ""name"": ""m"", ""isStar"": false, ""starTable"": null, ""transformKind"": ""expression"",
             ""transformFunction"": { ""name"": ""DATE_TRUNC"", ""literalArgs"": [""MONTH""], ""columnArgs"": [
                 { ""sourceName"": ""t"", ""sourceAlias"": null, ""sourceKind"": ""table"", ""table"": ""t"", ""column"": ""created_at"", ""unqualified"": true, ""confidence"": ""resolved"" } ] },
-            ""castType"": null, ""typeHint"": null, ""nullability"": ""non_null"", ""upstream"": []
+            ""castType"": null, ""typeHint"": null, ""nullability"": ""non_null"", ""upstream"": [
+                { ""sourceName"": ""t"", ""sourceAlias"": null, ""sourceKind"": ""table"", ""table"": ""t"", ""column"": ""amount"", ""unqualified"": true, ""confidence"": ""resolved"",
+                  ""pathTransformKind"": ""aggregation"", ""pathFunctions"": [""ROUND"", ""SUM""], ""pathWindow"": true } ]
         } ],
         ""relations"": [ { ""name"": ""t"", ""alias"": null, ""kind"": ""table"", ""columns"": [], ""catalog"": ""db"", ""schema"": ""sch"", ""table"": ""t"" } ],
         ""baseTables"": [ { ""name"": ""t"", ""alias"": null, ""kind"": ""table"", ""columns"": [], ""catalog"": null, ""schema"": null, ""table"": ""t"" } ],
@@ -130,6 +132,108 @@ public class QueryAnalysisModelTests
         Assert.Null(analysis.CteFacts);
         Assert.Equal(ProjectionNullability.unknown, analysis.Projections[0].Nullability);
         Assert.Null(analysis.Projections[0].TransformFunction);
+    }
+
+    [Fact]
+    public void TestLegacyUpstreamWithoutPathFields()
+    {
+        // Native before v0.13.5 does not emit the path fields; newer native omits them when unset
+        string json = @"{ ""sourceName"": ""t"", ""sourceKind"": ""table"", ""column"": ""a"", ""unqualified"": true, ""confidence"": ""resolved"" }";
+        var reference = JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.ColumnReferenceFact)!;
+
+        Assert.Null(reference.PathTransformKind);
+        Assert.NotNull(reference.PathFunctions);
+        Assert.Empty(reference.PathFunctions);
+        Assert.False(reference.PathWindow);
+    }
+
+    [Fact]
+    public void TestProjectionUpstreamPathFields()
+    {
+        var upstream = Assert.Single(Assert.Single(Deserialize().Projections).Upstream);
+
+        Assert.Equal("amount", upstream.Column);
+        Assert.Equal(TransformKind.aggregation, upstream.PathTransformKind);
+        Assert.Equal(new[] { "ROUND", "SUM" }, upstream.PathFunctions);
+        Assert.True(upstream.PathWindow);
+    }
+
+    [Fact]
+    public void TestColumnUseReferencePathFieldsAbsent()
+    {
+        var reference = Assert.Single(Assert.Single(Deserialize().ColumnUses).References);
+
+        Assert.Null(reference.PathTransformKind);
+        Assert.NotNull(reference.PathFunctions);
+        Assert.Empty(reference.PathFunctions);
+        Assert.False(reference.PathWindow);
+    }
+
+    [Fact]
+    public void TestColumnReferenceFactPathFieldsRoundTrip()
+    {
+        string json = @"{""sourceName"":""t"",""sourceKind"":""table"",""table"":""t"",""column"":""amount"",""unqualified"":false,""confidence"":""resolved""," +
+                      @"""pathTransformKind"":""cast"",""pathFunctions"":[""ROW_NUMBER""],""pathWindow"":true}";
+        var reference = JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.ColumnReferenceFact)!;
+
+        Assert.Equal(TransformKind.cast, reference.PathTransformKind);
+        Assert.Equal(new[] { "ROW_NUMBER" }, reference.PathFunctions);
+        Assert.True(reference.PathWindow);
+        Assert.Equal(json, JsonSerializer.Serialize(reference, PolyglotJsonContext.Default.ColumnReferenceFact));
+    }
+
+    [Fact]
+    public void TestColumnReferenceFactPathFieldsDefaultsSerialization()
+    {
+        var reference = new ColumnReferenceFact { SourceKind = SourceKind.table, Column = "a", Confidence = ReferenceConfidence.resolved };
+        string json = JsonSerializer.Serialize(reference, PolyglotJsonContext.Default.ColumnReferenceFact);
+
+        Assert.DoesNotContain("pathTransformKind", json);
+        Assert.DoesNotContain("pathWindow", json);
+        Assert.Contains(@"""pathFunctions"":[]", json);
+    }
+
+    [Fact]
+    public void TestColumnUseReferenceFactPathFieldsRoundTrip()
+    {
+        var reference = new ColumnUseReferenceFact
+        {
+            SourceName = "orders",
+            SourceKind = SourceKind.table,
+            Column = "amount",
+            Confidence = ReferenceConfidence.resolved,
+            PathTransformKind = TransformKind.expression,
+            PathFunctions = new[] { "ABS" },
+            PathWindow = true,
+            Span = new QuerySourceSpan { Start = 1, End = 7 }
+        };
+        var analysis = new QueryAnalysis { ColumnUses = new[] { new ColumnUseFact { Context = ColumnUseContext.filter, References = new[] { reference } } } };
+
+        string json = JsonSerializer.Serialize(analysis, PolyglotJsonContext.Default.QueryAnalysis);
+        Assert.Contains(@"""pathTransformKind"":""expression"",""pathFunctions"":[""ABS""],""pathWindow"":true", json);
+
+        var parsed = Assert.Single(Assert.Single(JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.QueryAnalysis)!.ColumnUses).References);
+        Assert.Equal(TransformKind.expression, parsed.PathTransformKind);
+        Assert.Equal(new[] { "ABS" }, parsed.PathFunctions);
+        Assert.True(parsed.PathWindow);
+        Assert.Equal(1, parsed.Span.Start);
+        Assert.Equal(7, parsed.Span.End);
+    }
+
+    [Theory]
+    [InlineData("direct", TransformKind.direct)]
+    [InlineData("cast", TransformKind.cast)]
+    [InlineData("aggregation", TransformKind.aggregation)]
+    [InlineData("constant", TransformKind.constant)]
+    [InlineData("expression", TransformKind.expression)]
+    [InlineData("star", TransformKind.star)]
+    public void TestPathTransformKindValues(string json, TransformKind expected)
+    {
+        string referenceJson = $@"{{""sourceKind"":""table"",""column"":""a"",""unqualified"":false,""confidence"":""resolved"",""pathTransformKind"":""{json}""}}";
+        var reference = JsonSerializer.Deserialize(referenceJson, PolyglotJsonContext.Default.ColumnReferenceFact)!;
+
+        Assert.Equal(expected, reference.PathTransformKind);
+        Assert.Contains($@"""pathTransformKind"":""{json}""", JsonSerializer.Serialize(reference, PolyglotJsonContext.Default.ColumnReferenceFact));
     }
 
     [Theory]

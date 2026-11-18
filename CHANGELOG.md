@@ -9,6 +9,20 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+
+### Fixed
+
+## [0.6.0] - 2026-11-18
+ 
+### Added
+
+- `ColumnReferenceFact.PathTransformKind`, `PathFunctions`, `PathWindow` - transform metadata along the lineage path of projection upstream references (also on `ColumnUseReferenceFact`, which flattens `ColumnReferenceFact`)
+- `DataType.CharacterSetType.Length` (e.g. `CHAR(10) CHARACTER SET utf8mb4`)
+
+### Changed
+
+- Update Polyglot to v0.14.1
+- Native `EXPLAIN` statements now parse to an `explain` AST node instead of `describe`
  
 ### Fixed
 

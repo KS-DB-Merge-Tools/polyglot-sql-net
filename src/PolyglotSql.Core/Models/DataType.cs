@@ -396,6 +396,9 @@ namespace PolyglotSql.Models
         {
             [JsonPropertyName("name")]
             public string Name { get; set; }
+            [JsonPropertyName("length")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public uint? Length { get; set; }
         }
 
         // Unknown

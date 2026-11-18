@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
@@ -27,5 +28,21 @@ namespace PolyglotSql.Models
 
         [JsonPropertyName("confidence")]
         public ReferenceConfidence Confidence { get; set; }
+
+        // Strongest transform on the lineage path from this reference to the projection output
+        // (through CTEs, derived tables and set-operation branches). Only projection upstream references carry it.
+        [JsonPropertyName("pathTransformKind")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public TransformKind? PathTransformKind { get; set; }
+
+        // Function names on the same path, from the output to the source, in the dialect spelling.
+        // Native omits the key when the list is empty.
+        [JsonPropertyName("pathFunctions")]
+        public string[] PathFunctions { get; set; } = Array.Empty<string>();
+
+        // True when a step on the path is a window function.
+        [JsonPropertyName("pathWindow")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public bool PathWindow { get; set; }
     }
 }
