@@ -122,4 +122,88 @@ public class AnalyzeQueryResultTests
     {
         Assert.Empty(Polyglot.AnalyzeQuery("SELECT 1").ColumnUses);
     }
+
+    // Same schema as the native path_kind_analysis test helper
+    private static QueryAnalysis AnalyzeOrders(string sql) => Polyglot.AnalyzeQuery(sql, new AnalyzeQueryOptions
+    {
+        Dialect = Dialect.PostgreSQL,
+        Schema = new ValidationSchema
+        {
+            Tables =
+            {
+                new SchemaTable
+                {
+                    Name = "orders",
+                    Schema = "s",
+                    Columns =
+                    {
+                        new SchemaColumn { Name = "order_id", Type = "INT" },
+                        new SchemaColumn { Name = "customer_id", Type = "INT" },
+                        new SchemaColumn { Name = "amount", Type = "DECIMAL(10,2)" },
+                        new SchemaColumn { Name = "status", Type = "TEXT" },
+                        new SchemaColumn { Name = "ordered_at", Type = "TIMESTAMP" }
+                    }
+                }
+            }
+        }
+    });
+
+    [Fact]
+    public void TestUpstreamPathTransformKindAndFunctions()
+    {
+        var analysis = AnalyzeOrders(
+            "WITH t AS (SELECT customer_id, SUM(amount) AS total FROM s.orders GROUP BY customer_id) " +
+            "SELECT customer_id, ROUND(total, 2) AS total FROM t");
+
+        var customer = Assert.Single(analysis.Projections[0].Upstream);
+        Assert.Equal("customer_id", customer.Column, ignoreCase: true);
+        Assert.Equal(TransformKind.direct, customer.PathTransformKind);
+        Assert.Empty(customer.PathFunctions);
+        Assert.False(customer.PathWindow);
+
+        var total = Assert.Single(analysis.Projections[1].Upstream);
+        Assert.Equal("amount", total.Column, ignoreCase: true);
+        Assert.Equal(TransformKind.aggregation, total.PathTransformKind);
+        Assert.Equal(new[] { "ROUND", "SUM" }, total.PathFunctions);
+        Assert.False(total.PathWindow);
+    }
+
+    [Fact]
+    public void TestUpstreamPathWindow()
+    {
+        var analysis = AnalyzeOrders("SELECT ROW_NUMBER() OVER (ORDER BY ordered_at) AS rn FROM s.orders");
+
+        var reference = Assert.Single(Assert.Single(analysis.Projections).Upstream);
+        Assert.Equal("ordered_at", reference.Column, ignoreCase: true);
+        Assert.Equal(new[] { "ROW_NUMBER" }, reference.PathFunctions);
+        Assert.True(reference.PathWindow);
+    }
+
+    [Fact]
+    public void TestUpstreamPathCast()
+    {
+        var analysis = AnalyzeOrders("WITH a AS (SELECT CAST(amount AS INT) AS amt FROM s.orders) SELECT amt FROM a");
+
+        var projection = Assert.Single(analysis.Projections);
+        Assert.Equal(TransformKind.direct, projection.TransformKind);
+        var reference = Assert.Single(projection.Upstream);
+        Assert.Equal(TransformKind.cast, reference.PathTransformKind);
+        Assert.Empty(reference.PathFunctions);
+    }
+
+    [Fact]
+    public void TestColumnUseReferencesHaveNoPath()
+    {
+        var analysis = AnalyzeOrders("SELECT t.total FROM (SELECT SUM(amount) AS total FROM s.orders) AS t WHERE t.total > 0");
+
+        Assert.Equal(TransformKind.aggregation, Assert.Single(analysis.Projections[0].Upstream).PathTransformKind);
+
+        var use = Assert.Single(analysis.ColumnUses, u => u.Context == ColumnUseContext.filter);
+        Assert.All(use.References, r =>
+        {
+            Assert.Null(r.PathTransformKind);
+            Assert.Empty(r.PathFunctions);
+            Assert.False(r.PathWindow);
+        });
+    }
 }

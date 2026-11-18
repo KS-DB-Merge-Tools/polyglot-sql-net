@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
@@ -30,6 +31,19 @@ namespace PolyglotSql.Models
 
         [JsonPropertyName("confidence")]
         public ReferenceConfidence Confidence { get; set; }
+
+        // Path metadata of ColumnReferenceFact. Native only fills it for projection upstream
+        // references, so on column uses these normally keep their defaults.
+        [JsonPropertyName("pathTransformKind")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public TransformKind? PathTransformKind { get; set; }
+
+        [JsonPropertyName("pathFunctions")]
+        public string[] PathFunctions { get; set; } = Array.Empty<string>();
+
+        [JsonPropertyName("pathWindow")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public bool PathWindow { get; set; }
 
         // Span of this use (not of the upstream column's definition).
         [JsonPropertyName("span")]

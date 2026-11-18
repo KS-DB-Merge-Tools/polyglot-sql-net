@@ -216,4 +216,43 @@ public class DataTypeTests
         string actual = Polyglot.TranspileDataType(input, dialect, dialect);
         Assert.Equal(input, actual.ToUpperInvariant());
     }
+
+    [Theory]
+    [InlineData("{\"data_type\":\"character_set\",\"name\":\"utf8mb4\",\"length\":10}", "utf8mb4", 10u)]
+    [InlineData("{\"data_type\":\"character_set\",\"name\":\"latin1\"}", "latin1", null)]
+    public void TestCharacterSetSerializationRoundTrip(string json, string name, uint? length)
+    {
+        var dataType = JsonSerializer.Deserialize(json, PolyglotJsonContext.Default.DataType);
+        var charset = Assert.IsType<DataType.CharacterSetType>(dataType);
+        Assert.Equal(name, charset.Name);
+        Assert.Equal(length, charset.Length);
+        Assert.Equal(json, JsonSerializer.Serialize(dataType, PolyglotJsonContext.Default.DataType));
+    }
+
+    [Fact]
+    public void TestParseCharacterSetWithLength()
+    {
+        DataType result = Polyglot.ParseDataType("CHAR(10) CHARACTER SET utf8mb4", Dialect.MySQL);
+        var charset = Assert.IsType<DataType.CharacterSetType>(result);
+        Assert.Equal("utf8mb4", charset.Name);
+        Assert.Equal(10u, charset.Length);
+    }
+
+    [Fact]
+    public void TestParseCharacterSetWithoutLength()
+    {
+        DataType result = Polyglot.ParseDataType("CHAR CHARACTER SET utf8mb4", Dialect.MySQL);
+        var charset = Assert.IsType<DataType.CharacterSetType>(result);
+        Assert.Equal("utf8mb4", charset.Name);
+        Assert.Null(charset.Length);
+    }
+
+    [Theory]
+    [InlineData(10u, "CHAR(10) CHARACTER SET utf8mb4")]
+    [InlineData(null, "CHAR CHARACTER SET utf8mb4")]
+    public void TestGenerateCharacterSet(uint? length, string expected)
+    {
+        string result = Polyglot.GenerateDataType(new DataType.CharacterSetType { Name = "utf8mb4", Length = length }, Dialect.MySQL);
+        Assert.Equal(expected, result);
+    }
 }
