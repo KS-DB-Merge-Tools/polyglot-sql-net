@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace PolyglotSql.Models
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter<UnsupportedLevel>))]
     public enum UnsupportedLevel
     {
         warn = 0,

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PolyglotSql;
 using PolyglotSql.Bundle;
 using PolyglotSql.Models;
@@ -92,7 +93,9 @@ public class TranspileTests
 
     [Theory]
     [InlineData(UnsupportedLevel.warn, false)]
+    [InlineData(UnsupportedLevel.ignore, false)]
     [InlineData(UnsupportedLevel.raise, true)]
+    [InlineData(UnsupportedLevel.immediate, true)]
     public void TranspileOptionUnsupportedLevel(UnsupportedLevel level, bool expectThrow)
     {
         var opts = new TranspileOptions { UnsupportedLevel = level };
@@ -107,6 +110,18 @@ public class TranspileTests
             string[] result = Polyglot.TranspileWithOptions(sql, Dialect.PostgreSQL, Dialect.MySQL, opts);
             Assert.NotEmpty(result);
         }
+    }
+
+    [Theory]
+    [InlineData(UnsupportedLevel.warn, "warn")]
+    [InlineData(UnsupportedLevel.ignore, "ignore")]
+    [InlineData(UnsupportedLevel.raise, "raise")]
+    [InlineData(UnsupportedLevel.immediate, "immediate")]
+    public void TranspileOptionUnsupportedLevelJson(UnsupportedLevel level, string json)
+    {
+        var opts = new TranspileOptions { UnsupportedLevel = level };
+        Assert.Contains($"\"unsupportedLevel\":\"{json}\"", JsonSerializer.Serialize(opts, PolyglotJsonContext.Default.TranspileOptions));
+        Assert.Equal(level, JsonSerializer.Deserialize($"\"{json}\"", PolyglotJsonContext.Default.UnsupportedLevel));
     }
 
     [Theory]
