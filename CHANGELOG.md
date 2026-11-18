@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
  
 ### Fixed
 
+- `UnsupportedLevel` uses the generic `JsonStringEnumConverter<UnsupportedLevel>` (native AOT compatible, SYSLIB1034 warning)
+- Publish workflow: Windows native builds failed because Polyglot v0.14.1 pins its own Rust toolchain (`rust-toolchain.toml`) without the Windows targets
 
 ## [0.5.0] - 2026-10-19
  
